@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pavan Yadava Annappa — ML Engineer, 3D Perception</title>
+<meta name="description" content="Machine Learning Engineer — 3D perception, multimodal sensor fusion (LiDAR·camera·radar), real-time deployment (TensorRT, ROS 2), VLA prototyping.">
+<style>
+  :root{
+    --bg:#131312; --panel:#1a1a19; --panel2:#202020; --line:#2e2e2c;
+    --ink:#e8e6df; --muted:#a3a299; --dim:#7a7971;
+    --blue:#3987e5; --green:#199e70; --orange:#d95926; --amber:#c98500;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  h1,h2,h3{line-height:1.25;font-weight:650}
+  section{padding:56px 0;border-top:1px solid var(--line)}
+  .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:600;margin-bottom:14px}
+
+  /* header */
+  header{padding:72px 0 56px}
+  header h1{font-size:clamp(30px,5vw,44px)}
+  .role{font-size:clamp(17px,2.6vw,21px);color:var(--muted);margin-top:8px}
+  .role b{color:var(--ink);font-weight:600}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px 22px;color:var(--dim);font-size:15px}
+  .meta a{color:var(--muted)}
+  .meta a:hover{color:var(--blue)}
+  .lede{margin-top:26px;max-width:760px;color:var(--muted);font-size:17px}
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* chips */
+  .chips{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--panel)}
+
+  /* featured */
+  .video-frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000;margin:22px 0 8px}
+  .video-frame video{display:block;width:100%;height:auto}
+  .caption{font-size:13.5px;color:var(--dim);margin-bottom:22px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .fact{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14.5px;color:var(--muted)}
+  .fact b{color:var(--ink);font-weight:600}
+  .fact .n{display:block;font-size:20px;font-weight:650;color:var(--ink);margin-bottom:2px}
+  .fact .lbl{font-size:12px;color:var(--dim)}
+  .links-row{margin-top:20px;display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-size:14.5px;color:var(--ink);background:var(--panel)}
+  .btn:hover{border-color:var(--blue);text-decoration:none}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{filter:brightness(1.1)}
+
+  /* project cards */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  @media(max-width:720px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px}
+  .card h3{font-size:17px}
+  .card p{font-size:14.5px;color:var(--muted);flex:1}
+  .card .tags{font-size:12.5px;color:var(--dim)}
+  .card a.repo{font-size:14px}
+
+  /* experience */
+  .job{display:grid;grid-template-columns:170px 1fr;gap:6px 26px;padding:18px 0;border-bottom:1px solid var(--line)}
+  .job:last-child{border-bottom:none}
+  @media(max-width:720px){.job{grid-template-columns:1fr}}
+  .when{color:var(--dim);font-size:14px;padding-top:2px}
+  .job h3{font-size:16.5px}
+  .job .org{color:var(--muted);font-size:14.5px;margin-top:1px}
+  .job p{color:var(--muted);font-size:14.5px;margin-top:8px}
+
+  /* skills */
+  .skills{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  @media(max-width:720px){.skills{grid-template-columns:1fr}}
+  .skill{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .skill h3{font-size:14px;color:var(--blue);margin-bottom:6px}
+  .skill p{font-size:14px;color:var(--muted)}
+
+  footer{padding:48px 0 64px;border-top:1px solid var(--line);color:var(--dim);font-size:14.5px}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Pavan Yadava Annappa</h1>
+  <div class="role">Machine Learning Engineer — <b>3D Perception &amp; Multimodal Sensor Fusion</b></div>
+  <div class="meta">
+    <span>Nürnberg, Germany</span>
+    <a href="mailto:pavanyadava07@gmail.com">pavanyadava07@gmail.com</a>
+    <a href="https://github.com/pavanyadava007">github.com/pavanyadava007</a>
+    <a href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">live demo · HF Space</a>
+  </div>
+  <p class="lede">
+    3+ years in automotive ADAS and perception (Continental AG / AUMOVIO), currently researching end-to-end
+    autonomy (SparseDrive) alongside an M.Sc. in AI for Autonomous Driving at FAU Erlangen-Nürnberg.
+    I build perception systems the whole way down: <b>BEV LiDAR–camera–radar fusion</b>, transformer encoders,
+    multitask heads, then the unglamorous part — <b>ONNX → TensorRT FP16/INT8 → ROS&nbsp;2 C++</b> — until it runs in real time.
+  </p>
+  <div class="chips">
+    <span class="chip">PyTorch</span><span class="chip">TensorRT</span><span class="chip">ONNX</span>
+    <span class="chip">ROS 2</span><span class="chip">C++</span><span class="chip">BEV perception</span>
+    <span class="chip">Occupancy</span><span class="chip">VLA</span><span class="chip">DVC</span><span class="chip">ISO 26262 / 21448</span>
+  </div>
+</header>
+
+<section id="featured">
+  <div class="kicker">Featured project</div>
+  <h2>offroad-bevfusion — camera + LiDAR + radar multitask BEV perception</h2>
+  <div class="video-frame">
+    <video controls muted playsinline preload="metadata" poster="assets/poster.jpg">
+      <source src="assets/showcase.mp4" type="video/mp4">
+    </video>
+  </div>
+  <p class="caption">
+    Four replay segments: urban perception + VLA · hazard drive (Qwen2.5-VL LoRA VLA + deterministic fail-safe rule
+    escalating APPROACH → WAIT → STOP as a pedestrian enters the corridor; VLA grounded on GT perception) ·
+    night/wet scene · GOOSE off-road 8-class BEV segmentation in rain.
+  </p>
+  <p style="color:var(--muted);font-size:15.5px">
+    An open-source, end-to-end off-highway perception stack built on a zero-cost GPU budget: six cameras (LSS),
+    LiDAR pillars and 5-sweep radar pillars fused into a shared 200×200 BEV by a deformable-attention encoder,
+    feeding 3D detection (CenterPoint), BEV segmentation and 3D occupancy heads under Kendall uncertainty-weighted
+    multitask loss. Exported as static-shape ONNX and deployed as TensorRT engines behind a ROS&nbsp;2 Humble C++ node —
+    no custom plugins, CI-tested export parity. Includes a 14-stage DVC data pipeline with hard-example mining,
+    adverse-weather and radar-dropout robustness studies, and a VLA task-grounding interface for wheel-loader
+    action primitives with an ISO&nbsp;21448 hazard mapping.
+  </p>
+  <div class="grid2">
+    <div class="fact"><span class="n">36.4 → 15.2 / 14.7 ms</span><span class="lbl">PyTorch FP32 → TensorRT FP16 / INT8, batch 1, measured on NVIDIA L4</span></div>
+    <div class="fact"><span class="n">mAP 0.022 → 0.053</span><span class="lbl">camera-only → cam+LiDAR+radar ablation (nuScenes-mini, 12 epochs)</span></div>
+    <div class="fact"><span class="n">4.8 × 10⁻⁷</span><span class="lbl">ONNX Runtime export parity (opset 17, static shapes, zero custom plugins)</span></div>
+    <div class="fact"><span class="n">11.5 ms/frame</span><span class="lbl">ROS 2 Humble C++ node on the FP16 engine (L4), rviz2 replay</span></div>
+  </div>
+  <div class="links-row">
+    <a class="btn primary" href="https://github.com/pavanyadava007/offroad-bevfusion">Code &amp; full report</a>
+    <a class="btn" href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">Interactive demo (HF Space)</a>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="kicker">More projects</div>
+  <h2>Selected work</h2>
+  <div class="cards" style="margin-top:20px">
+    <div class="card">
+      <h3>AI-Driven Hardware Validation &amp; Reporting Agent</h3>
+      <p>Autonomous GenAI agent (LangGraph, 14 audited tools over MCP) that turns 92,160 silicon validation
+      measurements into reports, diagrams and AEC-Q100 test plans; anomaly detection lifted from F1 0.53 to 0.90
+      on a device-grouped hold-out; read-only SQL guards, 97 tests, CI on SQLite + live PostgreSQL.</p>
+      <div class="tags">Python · LangChain · MCP · PostgreSQL · scikit-learn · TensorFlow · Docker</div>
+      <a class="repo" href="https://github.com/pavanyadava007/nxp-hw-validation-agent">github.com/pavanyadava007/nxp-hw-validation-agent →</a>
+    </div>
+    <div class="card">
+      <h3>embedded-codegen-lm</h3>
+      <p>A code-generation LM specialised for safety-critical embedded C: data curation → distributed LoRA/FSDP
+      fine-tuning → custom Triton kernel → vLLM serving (bf16 / AWQ INT4) → a compile / MISRA / unit-test
+      evaluation harness.</p>
+      <div class="tags">PyTorch · FSDP · Triton · vLLM · MISRA C</div>
+      <a class="repo" href="https://github.com/pavanyadava007/embedded-codegen-lm">github.com/pavanyadava007/embedded-codegen-lm →</a>
+    </div>
+    <div class="card">
+      <h3>Scalable 4D Perception &amp; Latency</h3>
+      <p>Closed-loop autonomous-driving architecture concept: fleet data ingestion, cloud auto-labelling of 3D
+      ground truth via 4D reconstruction, and deployment of compressed, latency-optimised perception models to
+      constrained edge devices.</p>
+      <div class="tags">4D reconstruction · auto-labelling · edge deployment</div>
+      <a class="repo" href="https://github.com/pavanyadava007/End-to-End-Scalable-4D-Perception-and-Latency">github.com/pavanyadava007/End-to-End-Scalable-4D-Perception-and-Latency →</a>
+    </div>
+    <div class="card">
+      <h3>SparseDrive end-to-end autonomy (thesis research)</h3>
+      <p>Ongoing M.Sc. research at AUMOVIO on the SparseDrive end-to-end driving model: improving safety-critical
+      vulnerable-road-user detection on nuScenes through C++/Python point-cloud pre-processing and model analysis,
+      with ISO 21448 (SOTIF) safety mapping.</p>
+      <div class="tags">End-to-end autonomy · nuScenes · SOTIF</div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="kicker">Experience</div>
+  <h2>Where I've worked</h2>
+  <div style="margin-top:14px">
+    <div class="job">
+      <div class="when">Oct 2025 — present</div>
+      <div>
+        <h3>Working Student — AI in Automotive Testing</h3>
+        <div class="org">AUMOVIO SE (Continental AG automotive spin-off) · Frankfurt, Germany</div>
+        <p>SparseDrive end-to-end model research (VRU detection, point-cloud pre-processing in C++/Python);
+        MLOps evaluation tooling reporting mAP and precision–recall per test scenario; radar test automation.</p>
+      </div>
+    </div>
+    <div class="job">
+      <div class="when">Apr 2024 — Oct 2025</div>
+      <div>
+        <h3>AI &amp; Data Science Intern, Automotive Division</h3>
+        <div class="org">Continental AG · Alzenau, Germany</div>
+        <p>ADAS validation workflows with deep learning, sensor fusion and image/video processing;
+        real-time visualisation tooling; Docker-containerised deployment.</p>
+      </div>
+    </div>
+    <div class="job">
+      <div class="when">Jun 2022 — Sep 2024</div>
+      <div>
+        <h3>Engineer — ADAS Software Algorithm Development</h3>
+        <div class="org">Continental AG · Bengaluru, India</div>
+        <p>CV and Transformer models for series Traffic Sign Recognition; landmark detection, automatic camera
+        calibration, ODD testing; KPI-evaluation pipelines saving 30+ hours/week, under ISO 26262 (ASIL-B) and MISRA C++.</p>
+      </div>
+    </div>
+    <div class="job">
+      <div class="when">Oct 2024 — present</div>
+      <div>
+        <h3>M.Sc. Artificial Intelligence in Autonomous Driving &amp; Electromobility</h3>
+        <div class="org">Friedrich-Alexander-Universität Erlangen-Nürnberg</div>
+      </div>
+    </div>
+    <div class="job">
+      <div class="when">2021</div>
+      <div>
+        <h3>B.E. Electronics and Communication Engineering</h3>
+        <div class="org">The National Institute of Engineering · Mysuru, India</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="kicker">Skills</div>
+  <h2>What I work with</h2>
+  <div class="skills" style="margin-top:20px">
+    <div class="skill"><h3>3D Perception</h3><p>BEV perception (LSS, deformable attention), 3D detection (CenterPoint, PointPillars), semantic segmentation, occupancy prediction, multitask learning, LiDAR–camera–radar fusion, end-to-end autonomy, VLA prototyping</p></div>
+    <div class="skill"><h3>Real-time Deployment</h3><p>TensorRT (FP16 / INT8 PTQ), ONNX static-shape export, ROS 2 Humble, C++ inference nodes, Docker, quantization / pruning / distillation</p></div>
+    <div class="skill"><h3>Frameworks &amp; Tooling</h3><p>PyTorch, mmdetection3d-compatible tooling, NumPy, OpenCV, Weights &amp; Biases, DVC, distributed GPU training (Slurm), GitHub Actions CI, pytest</p></div>
+    <div class="skill"><h3>Safety &amp; Process</h3><p>ISO 26262 (ASIL-B), ISO 21448 (SOTIF), MISRA C++, automated KPI pipelines, simulation-based validation, HIL tooling</p></div>
+  </div>
+</section>
+
+<footer>
+  <div>Pavan Yadava Annappa · <a href="mailto:pavanyadava07@gmail.com">pavanyadava07@gmail.com</a> ·
+  <a href="https://github.com/pavanyadava007">GitHub</a> ·
+  <a href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">HF demo</a></div>
+</footer>
+
+</div>
+</body>
+</html>
