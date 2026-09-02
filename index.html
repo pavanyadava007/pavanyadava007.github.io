@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pavan Yadava Annappa — ML Engineer, 3D Perception</title>
-<meta name="description" content="Machine Learning Engineer — 3D perception, multimodal sensor fusion (LiDAR·camera·radar), real-time deployment (TensorRT, ROS 2), VLA prototyping.">
+<title>Pavan Yadava Annappa - ML Engineer, 3D Perception &amp; Edge Deployment</title>
+<meta name="description" content="Machine Learning Engineer - 3D perception, multimodal sensor fusion (LiDAR, camera, radar), model compression and real-time edge deployment (TensorRT, ONNX Runtime, ROS 2, Rust). Live demos, measured numbers.">
 <style>
   :root{
     --bg:#131312; --panel:#1a1a19; --panel2:#202020; --line:#2e2e2c;
@@ -18,34 +18,61 @@
   a{color:var(--blue);text-decoration:none}
   a:hover{text-decoration:underline}
   h1,h2,h3{line-height:1.25;font-weight:650}
-  section{padding:56px 0;border-top:1px solid var(--line)}
+  section{padding:56px 0;border-top:1px solid var(--line);scroll-margin-top:58px}
   .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:600;margin-bottom:14px}
 
+  /* nav */
+  nav.top{position:sticky;top:0;z-index:20;background:rgba(19,19,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;flex-wrap:wrap;gap:6px 20px;padding-top:12px;padding-bottom:12px;font-size:14px}
+  nav.top a{color:var(--muted)}
+  nav.top a:hover{color:var(--blue);text-decoration:none}
+  nav.top .who{color:var(--ink);font-weight:600;margin-right:auto}
+
   /* header */
-  header{padding:72px 0 56px}
+  header{padding:64px 0 52px}
   header h1{font-size:clamp(30px,5vw,44px)}
   .role{font-size:clamp(17px,2.6vw,21px);color:var(--muted);margin-top:8px}
   .role b{color:var(--ink);font-weight:600}
   .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px 22px;color:var(--dim);font-size:15px}
   .meta a{color:var(--muted)}
   .meta a:hover{color:var(--blue)}
-  .lede{margin-top:26px;max-width:760px;color:var(--muted);font-size:17px}
+  .lede{margin-top:26px;max-width:780px;color:var(--muted);font-size:17px}
   .lede b{color:var(--ink);font-weight:600}
 
   /* chips */
   .chips{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px}
   .chip{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--panel)}
 
-  /* featured */
-  .video-frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000;margin:22px 0 8px}
-  .video-frame video{display:block;width:100%;height:auto}
-  .caption{font-size:13.5px;color:var(--dim);margin-bottom:22px}
+  /* project heading row */
+  .phead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+  .phead h2{font-size:clamp(20px,3vw,26px)}
+  .status{font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;border-radius:999px;padding:3px 10px;border:1px solid}
+  .status.live{color:var(--green);border-color:rgba(25,158,112,.45);background:rgba(25,158,112,.10)}
+  .status.research{color:var(--amber);border-color:rgba(201,133,0,.45);background:rgba(201,133,0,.10)}
+  .sub{color:var(--muted);font-size:16px;margin-top:8px;max-width:820px}
+
+  /* media */
+  .media{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000;margin:22px 0 8px}
+  .media video,.media img{display:block;width:100%;height:auto}
+  .shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 8px}
+  @media(max-width:720px){.shots{grid-template-columns:1fr}}
+  .shots figure{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .shots img{display:block;width:100%;height:auto}
+  .shots figcaption{font-size:12.5px;color:var(--dim);padding:9px 12px;border-top:1px solid var(--line)}
+  .caption{font-size:13.5px;color:var(--dim);margin-bottom:20px}
+
+  .body{color:var(--muted);font-size:15.5px;margin-top:14px}
+  .body b{color:var(--ink);font-weight:600}
+
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
   @media(max-width:720px){.grid2{grid-template-columns:1fr}}
   .fact{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14.5px;color:var(--muted)}
-  .fact b{color:var(--ink);font-weight:600}
-  .fact .n{display:block;font-size:20px;font-weight:650;color:var(--ink);margin-bottom:2px}
+  .fact .n{display:block;font-size:19px;font-weight:650;color:var(--ink);margin-bottom:2px}
   .fact .lbl{font-size:12px;color:var(--dim)}
+
+  .note{margin-top:16px;border-left:2px solid var(--orange);background:var(--panel);border-radius:0 8px 8px 0;padding:12px 16px;font-size:14px;color:var(--muted)}
+  .note b{color:var(--ink);font-weight:600}
+
   .links-row{margin-top:20px;display:flex;flex-wrap:wrap;gap:12px}
   .btn{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-size:14.5px;color:var(--ink);background:var(--panel)}
   .btn:hover{border-color:var(--blue);text-decoration:none}
@@ -53,7 +80,7 @@
   .btn.primary:hover{filter:brightness(1.1)}
 
   /* project cards */
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
   @media(max-width:720px){.cards{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px}
   .card h3{font-size:17px}
@@ -71,109 +98,395 @@
   .job p{color:var(--muted);font-size:14.5px;margin-top:8px}
 
   /* skills */
-  .skills{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  .skills{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
   @media(max-width:720px){.skills{grid-template-columns:1fr}}
   .skill{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
   .skill h3{font-size:14px;color:var(--blue);margin-bottom:6px}
   .skill p{font-size:14px;color:var(--muted)}
 
+  /* chart */
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;margin-top:22px}
+  .fig h4{font-size:15px;font-weight:650;color:var(--ink)}
+  .fig .fsub{font-size:13px;color:var(--dim);margin-top:3px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 6px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .chartbox{overflow-x:auto}
+  .chartbox svg{display:block;width:100%;min-width:520px;height:auto}
+  .chartbox circle.pt{cursor:pointer;transition:r .12s ease}
+  .chartbox circle.pt:hover{r:10}
+  .tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .12s ease;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--ink);line-height:1.5;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.45);z-index:5}
+  .tip b{font-weight:650}
+  .tip .k{color:var(--dim)}
+  .fig details{margin-top:12px}
+  .fig summary{font-size:13px;color:var(--muted);cursor:pointer}
+  .fig table{border-collapse:collapse;margin-top:10px;font-size:13px;width:100%}
+  .fig th,.fig td{text-align:left;padding:6px 12px 6px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+  .fig th{color:var(--dim);font-weight:600}
+
   footer{padding:48px 0 64px;border-top:1px solid var(--line);color:var(--dim);font-size:14.5px}
   footer a{color:var(--muted)}
+  footer p{margin-top:10px;max-width:760px}
 </style>
 </head>
 <body>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="who">Pavan Yadava Annappa</span>
+    <a href="#offroad">offroad-bevfusion</a>
+    <a href="#aeroedge">AeroEdge</a>
+    <a href="#mrs">Reuse Scanner</a>
+    <a href="#more">More work</a>
+    <a href="#experience">Experience</a>
+  </div>
+</nav>
+
 <div class="wrap">
 
 <header>
   <h1>Pavan Yadava Annappa</h1>
-  <div class="role">Machine Learning Engineer — <b>3D Perception &amp; Multimodal Sensor Fusion</b></div>
+  <div class="role">Machine Learning Engineer - <b>3D Perception, Sensor Fusion &amp; Edge Deployment</b></div>
   <div class="meta">
     <span>Nürnberg, Germany</span>
     <a href="mailto:pavanyadava07@gmail.com">pavanyadava07@gmail.com</a>
     <a href="https://github.com/pavanyadava007">github.com/pavanyadava007</a>
-    <a href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">live demo · HF Space</a>
+    <a href="https://huggingface.co/pavanyadava07">huggingface.co/pavanyadava07</a>
   </div>
   <p class="lede">
     3+ years in automotive ADAS and perception (Continental AG / AUMOVIO), currently researching end-to-end
     autonomy (SparseDrive) alongside an M.Sc. in AI for Autonomous Driving at FAU Erlangen-Nürnberg.
-    I build perception systems the whole way down: <b>BEV LiDAR–camera–radar fusion</b>, transformer encoders,
-    multitask heads, then the unglamorous part — <b>ONNX → TensorRT FP16/INT8 → ROS&nbsp;2 C++</b> — until it runs in real time.
+    I build perception systems the whole way down: <b>BEV LiDAR-camera-radar fusion</b>, transformer encoders and
+    multitask heads, then the unglamorous part - <b>ONNX, TensorRT FP16/INT8, ROS 2 C++, Rust, OTA fleet rollout</b> -
+    until it runs in real time on hardware I can actually measure.
+  </p>
+  <p class="lede" style="margin-top:14px">
+    Every number on this page is measured on stated hardware. Where something failed, did not help, or could not be
+    measured, it says so.
   </p>
   <div class="chips">
-    <span class="chip">PyTorch</span><span class="chip">TensorRT</span><span class="chip">ONNX</span>
-    <span class="chip">ROS 2</span><span class="chip">C++</span><span class="chip">BEV perception</span>
-    <span class="chip">Occupancy</span><span class="chip">VLA</span><span class="chip">DVC</span><span class="chip">ISO 26262 / 21448</span>
+    <span class="chip">PyTorch</span><span class="chip">TensorRT</span><span class="chip">ONNX Runtime</span>
+    <span class="chip">ROS 2</span><span class="chip">C++</span><span class="chip">Rust</span>
+    <span class="chip">BEV perception</span><span class="chip">Occupancy</span><span class="chip">Quantization</span>
+    <span class="chip">VLM / VLA</span><span class="chip">RAG</span><span class="chip">MQTT / OTA</span>
+    <span class="chip">DVC</span><span class="chip">Docker</span><span class="chip">ISO 26262 / 21448</span>
   </div>
 </header>
 
-<section id="featured">
-  <div class="kicker">Featured project</div>
-  <h2>offroad-bevfusion — camera + LiDAR + radar multitask BEV perception</h2>
-  <div class="video-frame">
+<!-- ============ PROJECT 1 ============ -->
+<section id="offroad">
+  <div class="kicker">Project 01 · perception</div>
+  <div class="phead">
+    <h2>offroad-bevfusion</h2>
+    <span class="status live">Live demo</span>
+  </div>
+  <p class="sub">Camera + LiDAR + radar multitask BEV perception, exported to TensorRT and deployed as a ROS 2 C++ node,
+  with off-road transfer and a vision-language safety interface.</p>
+
+  <div class="media">
     <video controls muted playsinline preload="metadata" poster="assets/poster.jpg">
       <source src="assets/showcase.mp4" type="video/mp4">
     </video>
   </div>
   <p class="caption">
-    Four replay segments: urban perception + VLA · hazard drive (Qwen2.5-VL LoRA VLA + deterministic fail-safe rule
-    escalating APPROACH → WAIT → STOP as a pedestrian enters the corridor; VLA grounded on GT perception) ·
+    Four replay segments: urban perception + VLA · hazard drive (Qwen2.5-VL LoRA VLA plus a deterministic fail-safe rule
+    escalating APPROACH → WAIT → STOP as a pedestrian enters the corridor, VLA grounded on GT perception) ·
     night/wet scene · GOOSE off-road 8-class BEV segmentation in rain.
   </p>
-  <p style="color:var(--muted);font-size:15.5px">
-    An open-source, end-to-end off-highway perception stack built on a zero-cost GPU budget: six cameras (LSS),
-    LiDAR pillars and 5-sweep radar pillars fused into a shared 200×200 BEV by a deformable-attention encoder,
-    feeding 3D detection (CenterPoint), BEV segmentation and 3D occupancy heads under Kendall uncertainty-weighted
-    multitask loss. Exported as static-shape ONNX and deployed as TensorRT engines behind a ROS&nbsp;2 Humble C++ node —
-    no custom plugins, CI-tested export parity. Includes a 14-stage DVC data pipeline with hard-example mining,
-    adverse-weather and radar-dropout robustness studies, and a VLA task-grounding interface for wheel-loader
-    action primitives with an ISO&nbsp;21448 hazard mapping.
+
+  <p class="body">
+    An open-source off-highway perception stack built on a zero-cost GPU budget: six cameras (LSS), LiDAR pillars and
+    5-sweep radar pillars fused into a shared 200x200 BEV by a deformable-attention encoder, feeding <b>3D detection
+    (CenterPoint), BEV segmentation and 3D occupancy</b> heads under a Kendall uncertainty-weighted multitask loss.
+    Exported as static-shape ONNX (opset 17, no custom TensorRT plugins) and deployed as TensorRT FP16/INT8 engines
+    behind a <b>ROS 2 Humble C++ node</b>. Includes a 14-stage DVC pipeline with hard-example mining, adverse-weather and
+    radar-dropout robustness studies, GOOSE off-road transfer, and a VLA task-grounding interface for wheel-loader
+    action primitives with an ISO 21448 hazard mapping.
   </p>
+
   <div class="grid2">
     <div class="fact"><span class="n">36.4 → 15.2 / 14.7 ms</span><span class="lbl">PyTorch FP32 → TensorRT FP16 / INT8, batch 1, measured on NVIDIA L4</span></div>
-    <div class="fact"><span class="n">mAP 0.022 → 0.053</span><span class="lbl">camera-only → cam+LiDAR+radar ablation (nuScenes-mini, 12 epochs)</span></div>
-    <div class="fact"><span class="n">4.8 × 10⁻⁷</span><span class="lbl">ONNX Runtime export parity (opset 17, static shapes, zero custom plugins)</span></div>
     <div class="fact"><span class="n">11.5 ms/frame</span><span class="lbl">ROS 2 Humble C++ node on the FP16 engine (L4), rviz2 replay</span></div>
+    <div class="fact"><span class="n">mAP 0.022 → 0.053</span><span class="lbl">camera-only → cam+LiDAR+radar ablation (nuScenes-mini, 12 epochs); seg mIoU 0.214 → 0.302</span></div>
+    <div class="fact"><span class="n">IoU 0.021 → 0.348</span><span class="lbl">GOOSE off-road drivable-area, zero-shot → fine-tuned (LiDAR-driven, release ships no calibration)</span></div>
   </div>
+
+  <div class="media" style="margin-top:22px">
+    <img src="assets/obf-rviz.gif" alt="rviz2 replay of the ROS 2 node showing 3D boxes and BEV segmentation" loading="lazy">
+  </div>
+  <p class="caption">rviz2 replay of the deployed ROS 2 node, recorded in the ros:humble container on the L4 FP16 engine.</p>
+
+  <div class="note">
+    <b>Honest limits.</b> Trained on nuScenes-mini, so absolute mAP is low by design - the ablation deltas are the result,
+    not the scores. Rain and night rows are empty because both mini_val scenes are clear-day. Jetson Orin latency is
+    unmeasured (no hardware). INT8 agreement thresholds were not met, so FP16 is the recommended build. The VLA safety
+    result rests on n=2 real hazard frames, which is why the deterministic override is mandatory rather than optional.
+  </div>
+
   <div class="links-row">
-    <a class="btn primary" href="https://github.com/pavanyadava007/offroad-bevfusion">Code &amp; full report</a>
-    <a class="btn" href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">Interactive demo (HF Space)</a>
+    <a class="btn primary" href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">Interactive demo (HF Space)</a>
+    <a class="btn" href="https://github.com/pavanyadava007/offroad-bevfusion">Code &amp; full report</a>
   </div>
 </section>
 
-<section id="projects">
-  <div class="kicker">More projects</div>
-  <h2>Selected work</h2>
-  <div class="cards" style="margin-top:20px">
+<!-- ============ PROJECT 2 ============ -->
+<section id="aeroedge">
+  <div class="kicker">Project 02 · edge MLOps</div>
+  <div class="phead">
+    <h2>AeroEdge</h2>
+    <span class="status live">Live demo</span>
+  </div>
+  <p class="sub">One aerial-detection model compressed to 3.2 MB INT8 and shipped to a 20-device edge fleet through
+  signed OTA canary rollouts, with a Rust inference runtime parity-tested against Python.</p>
+
+  <p class="body">
+    The full lifecycle of an edge model rather than just its training run: <b>aero_v1</b> (VisDrone + DOTA-v1,
+    12,519 / 2,263 / 1,610 images, ~500k boxes) → YOLO11n at 960 px → static-shape ONNX with NMS outside the graph →
+    INT8 post-training quantization → release gates → signed bundles → <b>MQTT canary rollout across 20 Docker agents</b>
+    with automatic rollback. A second inference path is written in <b>Rust</b> (ort 2.0-rc.13) and CI-gated to box-level
+    IoU &gt; 0.99 against the Python runtime, plus a Control Room GUI for the fleet.
+  </p>
+
+  <div class="grid2">
+    <div class="fact"><span class="n">10.61 → 3.17 MB</span><span class="lbl">FP32 → INT8 QDQ ONNX (3.3x), mAP@0.5 0.569 → 0.523 on the deployed runtime path</span></div>
+    <div class="fact"><span class="n">90.6 s / 4.7 s</span><span class="lbl">canary 5% → 50% → 100% across 20 live agents, 0 failures; abort → all devices reverted</span></div>
+    <div class="fact"><span class="n">p95 29.6 ms · 34 FPS</span><span class="lbl">INT8 @640, ORT 8 threads on x86 EPYC 7R13, 5-min soak, RSS 184 MB</span></div>
+    <div class="fact"><span class="n">-20% RSS</span><span class="lbl">Rust runtime vs Python on the same .so and model (134.8 vs 168.7 MB); 109 ms cold start</span></div>
+  </div>
+
+  <figure class="fig" id="fig-pareto" style="position:relative">
+    <h4>What INT8 quantization actually bought on this CPU</h4>
+    <div class="fsub">Four exported variants, measured: ONNX Runtime, 8 threads, AMD EPYC 7R13, batch 1, fleet paused.
+    Arrows point from each FP32 build to its INT8 counterpart.</div>
+    <div class="legend">
+      <span><i style="background:#3987e5"></i>FP32</span>
+      <span><i style="background:#d95926"></i>INT8</span>
+      <span style="color:var(--dim)">Down and to the right = worse on both axes</span>
+    </div>
+    <div class="chartbox">
+      <svg viewBox="0 0 720 400" role="img" aria-label="Scatter plot of accuracy against p95 latency for four exported model variants. Both INT8 builds are slower and less accurate than their FP32 counterparts on this CPU.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9" fill="none" stroke="#7a7971" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- grid -->
+        <g stroke="#2e2e2c" stroke-width="1">
+          <line x1="64" y1="321.8" x2="696" y2="321.8"/>
+          <line x1="64" y1="246.4" x2="696" y2="246.4"/>
+          <line x1="64" y1="170.9" x2="696" y2="170.9"/>
+          <line x1="64" y1="95.5"  x2="696" y2="95.5"/>
+          <line x1="64" y1="20"    x2="696" y2="20"/>
+          <line x1="184.4" y1="20" x2="184.4" y2="352"/>
+          <line x1="334.9" y1="20" x2="334.9" y2="352"/>
+          <line x1="485.3" y1="20" x2="485.3" y2="352"/>
+          <line x1="635.8" y1="20" x2="635.8" y2="352"/>
+        </g>
+        <line x1="64" y1="352" x2="696" y2="352" stroke="#3f3f3c" stroke-width="1"/>
+
+        <!-- y axis labels -->
+        <g fill="#7a7971" font-size="12" font-family="inherit" text-anchor="end">
+          <text x="52" y="325.8">0.40</text>
+          <text x="52" y="250.4">0.45</text>
+          <text x="52" y="174.9">0.50</text>
+          <text x="52" y="99.5">0.55</text>
+          <text x="52" y="24">0.60</text>
+        </g>
+        <!-- x axis labels -->
+        <g fill="#7a7971" font-size="12" font-family="inherit" text-anchor="middle">
+          <text x="184.4" y="372">15</text>
+          <text x="334.9" y="372">20</text>
+          <text x="485.3" y="372">25</text>
+          <text x="635.8" y="372">30</text>
+        </g>
+        <text x="380" y="394" fill="#a3a299" font-size="12.5" font-family="inherit" text-anchor="middle">p95 latency (ms), lower is better</text>
+        <text x="16" y="186" fill="#a3a299" font-size="12.5" font-family="inherit" text-anchor="middle" transform="rotate(-90 16 186)">mAP@0.5, higher is better</text>
+
+        <!-- fp32 pareto front -->
+        <line x1="118.2" y1="261.5" x2="524.5" y2="66.8" stroke="#3987e5" stroke-width="2" stroke-dasharray="5 5" opacity=".45"/>
+
+        <!-- quantization arrows -->
+        <line x1="118.2" y1="261.5" x2="126.5" y2="322.5" stroke="#7a7971" stroke-width="1.6" marker-end="url(#ah)"/>
+        <line x1="524.5" y1="66.8"  x2="618.5" y2="132.5" stroke="#7a7971" stroke-width="1.6" marker-end="url(#ah)"/>
+
+        <!-- points -->
+        <circle class="pt" cx="118.2" cy="261.5" r="7" fill="#3987e5" stroke="#1a1a19" stroke-width="2"
+                data-t="FP32 @416" data-l="12.8 ms" data-m="0.440" data-s="10.51 MB"/>
+        <circle class="pt" cx="127.2" cy="327.9" r="7" fill="#d95926" stroke="#1a1a19" stroke-width="2"
+                data-t="INT8 @416" data-l="13.1 ms" data-m="0.396" data-s="3.07 MB"/>
+        <circle class="pt" cx="524.5" cy="66.8"  r="7" fill="#3987e5" stroke="#1a1a19" stroke-width="2"
+                data-t="FP32 @640" data-l="26.3 ms" data-m="0.569" data-s="10.61 MB"/>
+        <circle class="pt" cx="623.8" cy="136.2" r="7" fill="#d95926" stroke="#1a1a19" stroke-width="2"
+                data-t="INT8 @640 (shipped)" data-l="29.6 ms" data-m="0.523" data-s="3.17 MB"/>
+
+        <!-- direct labels -->
+        <g font-size="12.5" font-family="inherit" font-weight="600">
+          <text x="118.2" y="245"  fill="#e8e6df" text-anchor="middle">FP32 @416</text>
+          <text x="127.2" y="347"  fill="#e8e6df" text-anchor="middle">INT8 @416</text>
+          <text x="524.5" y="50"   fill="#e8e6df" text-anchor="middle">FP32 @640</text>
+          <text x="608"   y="140"  fill="#e8e6df" text-anchor="end">INT8 @640</text>
+        </g>
+        <text x="608" y="156" fill="#7a7971" font-size="11.5" font-family="inherit" text-anchor="end">shipped build, 3.17 MB</text>
+      </svg>
+    </div>
+    <div class="tip" id="tip-pareto"></div>
+    <figcaption class="caption" style="margin:12px 0 0">
+      Both INT8 points sit below and to the right of their FP32 counterparts: on this x86 CPU quantization cost
+      accuracy <em>and</em> latency, so the Pareto front (dashed) is the two FP32 builds. INT8 still ships, because
+      the thing it does buy is a 3.3x smaller artefact to push over the air.
+    </figcaption>
+    <details>
+      <summary>Table view</summary>
+      <table>
+        <thead><tr><th>Variant</th><th>p95 latency</th><th>mAP@0.5</th><th>File size</th></tr></thead>
+        <tbody>
+          <tr><td>FP32 @640</td><td>26.3 ms</td><td>0.569</td><td>10.61 MB</td></tr>
+          <tr><td>INT8 @640 (shipped)</td><td>29.6 ms</td><td>0.523</td><td>3.17 MB</td></tr>
+          <tr><td>FP32 @416</td><td>12.8 ms</td><td>0.440</td><td>10.51 MB</td></tr>
+          <tr><td>INT8 @416</td><td>13.1 ms</td><td>0.396</td><td>3.07 MB</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </figure>
+
+  <div class="note">
+    <b>What did not work, kept in the write-up.</b> INT8 measured ~3 ms <em>slower</em> than FP32 on this EPYC CPU
+    (QDQ overhead), so the INT8 win here is size only. The strict -1 pp accuracy gate <b>fails</b> for INT8 and the
+    release requires an explicit override - the gate is doing its job. Quantizing the head's final Concat silently
+    produced mAP 0.000 (box coords and probabilities share one uint8 scale). QAT was blocked by torch 2.6 removing
+    <code>prepare_qat_fx</code>; structured pruning found 0 prunable groups on YOLO11; distillation gave no gain
+    (0.6835 vs 0.6878) and was not shipped. Jetson, Pi 5 and Coral rows stay unmeasured - no such hardware.
+  </div>
+
+  <div class="links-row">
+    <a class="btn primary" href="https://huggingface.co/spaces/pavanyadava07/aeroedge">In-browser demo (HF Space)</a>
+    <a class="btn" href="https://github.com/pavanyadava007/aeroedge">Code &amp; results</a>
+    <a class="btn" href="https://huggingface.co/pavanyadava07/aeroedge-yolo11n">Model card (HF)</a>
+  </div>
+</section>
+
+<!-- ============ PROJECT 3 ============ -->
+<section id="mrs">
+  <div class="kicker">Project 03 · applied CV + RAG</div>
+  <div class="phead">
+    <h2>Makerspace Reuse Scanner</h2>
+    <span class="status live">Live demo</span>
+  </div>
+  <p class="sub">Edge camera detects reusable parts on a belt, a FastAPI + pgvector service tracks them as live inventory,
+  and an on-premise German/English RAG assistant answers disposal questions with citations.</p>
+
+  <div class="shots">
+    <figure>
+      <img src="assets/mrs-live.png" alt="Live feed page showing detections, bin routing chips and the running inventory" loading="lazy">
+      <figcaption>Live feed: YOLO11n detections over WebSocket, material class and bin route per item.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/mrs-ask.png" alt="Ask page showing a cited German answer from the RAG assistant" loading="lazy">
+      <figcaption>Ask: cited answers from the local corpus, plus a live inventory snapshot for stock questions.</figcaption>
+    </figure>
+  </div>
+
+  <p class="body">
+    Four containers, one <code>compose up</code>: an edge worker running <b>YOLO11n / ONNX</b> on a video or webcam
+    stream, a <b>FastAPI + Postgres/pgvector</b> hub with WebSocket live feed and dedupe, a React GUI, and a
+    <b>fully on-premise RAG</b> stack (Ollama llama3.1:8b + nomic-embed-text) over a bilingual disposal corpus.
+    Retrieval is <b>hybrid</b> - dense vectors plus IDF-weighted Postgres full-text lexical search - which was added
+    after a measured failure, and stock questions are grounded on a live inventory snapshot instead of being answered
+    from the model's memory.
+  </p>
+
+  <div class="grid2">
+    <div class="fact"><span class="n">20/20 · 3/3 · 2/2</span><span class="lbl">RAG eval, 25 hand-verified questions: expected doc cited, out-of-corpus declined, inventory questions grounded</span></div>
+    <div class="fact"><span class="n">2.44 s median</span><span class="lbl">per question, warm llama3.1:8b, k=4, answered in the question's language</span></div>
+    <div class="fact"><span class="n">mAP50 0.410</span><span class="lbl">detector on the held-out test split, 9 classes, public data only (v0-public)</span></div>
+    <div class="fact"><span class="n">Vector-only → hybrid</span><span class="lbl">vector-only retrieval missed rare literals (Kamin, PVC) and the model invented a hazard claim; hybrid fixed it</span></div>
+  </div>
+
+  <div class="note">
+    <b>Honest limits.</b> The detector is trained on public data only: <code>screw</code> (0.995) and <code>pcb</code>
+    (0.994) are studio single-object shots and inflated, <code>battery</code> (0.030) and <code>tool</code> (0.049) have
+    too little data to be usable, and 6 of 15 planned classes have no data at all. The dominant error is missed
+    detection, not confusion. No Raspberry Pi 5 benchmark - no device. Refusal scoring is a regex heuristic, so the
+    report ships every answer verbatim for manual review.
+  </div>
+
+  <div class="links-row">
+    <a class="btn primary" href="https://huggingface.co/spaces/pavanyadava07/makerspace-reuse-scanner">Browser demo (HF Space)</a>
+    <a class="btn" href="https://github.com/pavanyadava007/makerspace-reuse-scanner">Code &amp; reports</a>
+    <a class="btn" href="https://huggingface.co/pavanyadava07/makerspace-yolo11n">Model card (HF)</a>
+  </div>
+</section>
+
+<!-- ============ PROJECT 4 ============ -->
+<section id="nxp">
+  <div class="kicker">Project 04 · agents for hardware</div>
+  <div class="phead">
+    <h2>AI-Driven Hardware Validation &amp; Reporting Agent</h2>
+  </div>
+  <p class="sub">A GenAI agent over a silicon validation database that answers the question a lab actually cares about:
+  does an ML anomaly model beat the spec-limit screen already in use?</p>
+
+  <p class="body">
+    A LangGraph agent with <b>14 audited tools exposed over MCP</b> turns 240 validation runs and 92,160 measurements
+    into reports, diagrams and AEC-Q100 test plans, behind read-only SQL guards. The modelling side compares five
+    detectors on a split <b>grouped by device serial</b>, so no die appears on both sides of the split.
+  </p>
+
+  <div class="grid2">
+    <div class="fact"><span class="n">F1 0.531 → 0.900</span><span class="lbl">spec-limit screen → supervised RF on a DUT-grouped hold-out (ROC-AUC 0.963)</span></div>
+    <div class="fact"><span class="n">14 escapes · 3 overkills</span><span class="lbl">real defects that passed every spec limit, and healthy parts the limit screen wrongly failed</span></div>
+    <div class="fact"><span class="n">92,160 measurements</span><span class="lbl">240 runs, 40 injected faults, anomaly detection + report generation</span></div>
+    <div class="fact"><span class="n">6.1k LOC · 97 tests</span><span class="lbl">ruff-clean, typed, CI on SQLite and live PostgreSQL</span></div>
+  </div>
+
+  <div class="note">
+    <b>Reported, not hidden:</b> the rank-fused ensemble (0.816) is <em>worse</em> than the supervised model alone
+    (0.900) - rank averaging drags a strong learner toward two weaker ones. Fusion is kept only as the cold-start path
+    for a new product with no failure-analysis labels. 240 runs is also a small campaign, so the confidence intervals
+    are wide.
+  </div>
+
+  <div class="links-row">
+    <a class="btn primary" href="https://github.com/pavanyadava007/nxp-hw-validation-agent">Code &amp; report</a>
+  </div>
+</section>
+
+<!-- ============ MORE ============ -->
+<section id="more">
+  <div class="kicker">More work</div>
+  <h2>Also on the bench</h2>
+  <div class="cards">
     <div class="card">
-      <h3>AI-Driven Hardware Validation &amp; Reporting Agent</h3>
-      <p>Autonomous GenAI agent (LangGraph, 14 audited tools over MCP) that turns 92,160 silicon validation
-      measurements into reports, diagrams and AEC-Q100 test plans; anomaly detection lifted from F1 0.53 to 0.90
-      on a device-grouped hold-out; read-only SQL guards, 97 tests, CI on SQLite + live PostgreSQL.</p>
-      <div class="tags">Python · LangChain · MCP · PostgreSQL · scikit-learn · TensorFlow · Docker</div>
-      <a class="repo" href="https://github.com/pavanyadava007/nxp-hw-validation-agent">github.com/pavanyadava007/nxp-hw-validation-agent →</a>
+      <h3>SparseDrive end-to-end autonomy <span style="font-weight:400;color:var(--dim);font-size:13px">(thesis research)</span></h3>
+      <p>Ongoing M.Sc. research at AUMOVIO on the SparseDrive end-to-end driving model: improving safety-critical
+      vulnerable-road-user detection on nuScenes through C++/Python point-cloud pre-processing and model analysis,
+      with ISO 21448 (SOTIF) safety mapping. Private while in progress.</p>
+      <div class="tags">End-to-end autonomy · nuScenes · SOTIF</div>
     </div>
     <div class="card">
       <h3>embedded-codegen-lm</h3>
-      <p>A code-generation LM specialised for safety-critical embedded C: data curation → distributed LoRA/FSDP
-      fine-tuning → custom Triton kernel → vLLM serving (bf16 / AWQ INT4) → a compile / MISRA / unit-test
-      evaluation harness.</p>
+      <p>A code-generation LM specialised for safety-critical embedded C: data curation, distributed LoRA/FSDP
+      fine-tuning, a custom fused RMSNorm Triton kernel, vLLM serving (bf16 / AWQ INT4), and an evaluation harness that
+      scores generations by target compile rate, MISRA-C cleanliness and unit tests rather than by "does it run".
+      Pipeline is complete; no benchmark run is published yet.</p>
       <div class="tags">PyTorch · FSDP · Triton · vLLM · MISRA C</div>
       <a class="repo" href="https://github.com/pavanyadava007/embedded-codegen-lm">github.com/pavanyadava007/embedded-codegen-lm →</a>
     </div>
     <div class="card">
       <h3>Scalable 4D Perception &amp; Latency</h3>
-      <p>Closed-loop autonomous-driving architecture concept: fleet data ingestion, cloud auto-labelling of 3D
-      ground truth via 4D reconstruction, and deployment of compressed, latency-optimised perception models to
-      constrained edge devices.</p>
+      <p>Closed-loop autonomous-driving architecture concept: fleet data ingestion, cloud auto-labelling of 3D ground
+      truth via 4D reconstruction, and deployment of compressed, latency-optimised perception models to constrained edge
+      devices. Design study, not a measured system.</p>
       <div class="tags">4D reconstruction · auto-labelling · edge deployment</div>
       <a class="repo" href="https://github.com/pavanyadava007/End-to-End-Scalable-4D-Perception-and-Latency">github.com/pavanyadava007/End-to-End-Scalable-4D-Perception-and-Latency →</a>
     </div>
     <div class="card">
-      <h3>SparseDrive end-to-end autonomy (thesis research)</h3>
-      <p>Ongoing M.Sc. research at AUMOVIO on the SparseDrive end-to-end driving model: improving safety-critical
-      vulnerable-road-user detection on nuScenes through C++/Python point-cloud pre-processing and model analysis,
-      with ISO 21448 (SOTIF) safety mapping.</p>
-      <div class="tags">End-to-end autonomy · nuScenes · SOTIF</div>
+      <h3>LatentSync optimisation</h3>
+      <p>Technical challenge submission: profiling and optimising the LatentSync lip-sync diffusion pipeline for
+      inference cost and throughput.</p>
+      <div class="tags">Diffusion · inference optimisation · profiling</div>
+      <a class="repo" href="https://github.com/pavanyadava007/latentsync-optimization-vidlab7">github.com/pavanyadava007/latentsync-optimization-vidlab7 →</a>
     </div>
   </div>
 </section>
@@ -183,16 +496,16 @@
   <h2>Where I've worked</h2>
   <div style="margin-top:14px">
     <div class="job">
-      <div class="when">Oct 2025 — present</div>
+      <div class="when">Oct 2025 - present</div>
       <div>
-        <h3>Working Student — AI in Automotive Testing</h3>
+        <h3>Working Student, AI in Automotive Testing</h3>
         <div class="org">AUMOVIO SE (Continental AG automotive spin-off) · Frankfurt, Germany</div>
         <p>SparseDrive end-to-end model research (VRU detection, point-cloud pre-processing in C++/Python);
-        MLOps evaluation tooling reporting mAP and precision–recall per test scenario; radar test automation.</p>
+        MLOps evaluation tooling reporting mAP and precision-recall per test scenario; radar test automation.</p>
       </div>
     </div>
     <div class="job">
-      <div class="when">Apr 2024 — Oct 2025</div>
+      <div class="when">Apr 2024 - Oct 2025</div>
       <div>
         <h3>AI &amp; Data Science Intern, Automotive Division</h3>
         <div class="org">Continental AG · Alzenau, Germany</div>
@@ -201,16 +514,16 @@
       </div>
     </div>
     <div class="job">
-      <div class="when">Jun 2022 — Sep 2024</div>
+      <div class="when">Jun 2022 - Sep 2024</div>
       <div>
-        <h3>Engineer — ADAS Software Algorithm Development</h3>
+        <h3>Engineer, ADAS Software Algorithm Development</h3>
         <div class="org">Continental AG · Bengaluru, India</div>
         <p>CV and Transformer models for series Traffic Sign Recognition; landmark detection, automatic camera
         calibration, ODD testing; KPI-evaluation pipelines saving 30+ hours/week, under ISO 26262 (ASIL-B) and MISRA C++.</p>
       </div>
     </div>
     <div class="job">
-      <div class="when">Oct 2024 — present</div>
+      <div class="when">Oct 2024 - present</div>
       <div>
         <h3>M.Sc. Artificial Intelligence in Autonomous Driving &amp; Electromobility</h3>
         <div class="org">Friedrich-Alexander-Universität Erlangen-Nürnberg</div>
@@ -229,20 +542,53 @@
 <section id="skills">
   <div class="kicker">Skills</div>
   <h2>What I work with</h2>
-  <div class="skills" style="margin-top:20px">
-    <div class="skill"><h3>3D Perception</h3><p>BEV perception (LSS, deformable attention), 3D detection (CenterPoint, PointPillars), semantic segmentation, occupancy prediction, multitask learning, LiDAR–camera–radar fusion, end-to-end autonomy, VLA prototyping</p></div>
-    <div class="skill"><h3>Real-time Deployment</h3><p>TensorRT (FP16 / INT8 PTQ), ONNX static-shape export, ROS 2 Humble, C++ inference nodes, Docker, quantization / pruning / distillation</p></div>
-    <div class="skill"><h3>Frameworks &amp; Tooling</h3><p>PyTorch, mmdetection3d-compatible tooling, NumPy, OpenCV, Weights &amp; Biases, DVC, distributed GPU training (Slurm), GitHub Actions CI, pytest</p></div>
-    <div class="skill"><h3>Safety &amp; Process</h3><p>ISO 26262 (ASIL-B), ISO 21448 (SOTIF), MISRA C++, automated KPI pipelines, simulation-based validation, HIL tooling</p></div>
+  <div class="skills">
+    <div class="skill"><h3>3D Perception</h3><p>BEV perception (LSS, deformable attention), 3D detection (CenterPoint, PointPillars), semantic segmentation, occupancy prediction, multitask learning, LiDAR-camera-radar fusion, end-to-end autonomy, 2D detection (YOLO11), domain-shift evaluation</p></div>
+    <div class="skill"><h3>Deployment &amp; Compression</h3><p>TensorRT (FP16 / INT8 PTQ), static-shape ONNX export and parity testing, ONNX Runtime (Python, Rust, WebAssembly), ROS 2 Humble C++ nodes, quantization / pruning / distillation, latency and memory benchmarking, Docker</p></div>
+    <div class="skill"><h3>MLOps &amp; Systems</h3><p>DVC pipelines, MLflow, Weights &amp; Biases, GitHub Actions CI, pytest, ruff, signed OTA bundles, MQTT canary rollout with automatic rollback, FastAPI, Postgres/pgvector, React, distributed GPU training (Slurm, FSDP)</p></div>
+    <div class="skill"><h3>LLM / VLM</h3><p>Qwen2.5-VL LoRA fine-tuning, vision-language action grounding with deterministic safety overrides, on-premise RAG (Ollama, hybrid dense + lexical retrieval, citation and refusal evaluation), agentic tool use over MCP, vLLM serving</p></div>
+    <div class="skill"><h3>Safety &amp; Process</h3><p>ISO 26262 (ASIL-B), ISO 21448 (SOTIF), MISRA C++, hazard analysis and release gates, automated KPI pipelines, simulation-based validation, HIL tooling</p></div>
+    <div class="skill"><h3>Languages</h3><p>Python, C++, Rust, C, SQL, TypeScript. English (fluent), German (learning, working in a German-speaking environment), Kannada, Hindi.</p></div>
   </div>
 </section>
 
 <footer>
   <div>Pavan Yadava Annappa · <a href="mailto:pavanyadava07@gmail.com">pavanyadava07@gmail.com</a> ·
   <a href="https://github.com/pavanyadava007">GitHub</a> ·
-  <a href="https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion">HF demo</a></div>
+  <a href="https://huggingface.co/pavanyadava07">Hugging Face</a></div>
+  <p>All benchmarks on this page were measured on the hardware named beside them (NVIDIA L4 and AMD EPYC 7R13 on an
+  AWS EC2 host). Nothing is extrapolated to hardware I did not run on, and the failed or inconclusive experiments are
+  documented in each repository alongside the successful ones.</p>
 </footer>
 
 </div>
+
+<script>
+(function(){
+  var fig = document.getElementById('fig-pareto');
+  var tip = document.getElementById('tip-pareto');
+  if(!fig || !tip) return;
+  fig.querySelectorAll('circle.pt').forEach(function(c){
+    function show(e){
+      tip.innerHTML = '<b>' + c.dataset.t + '</b><br>' +
+        '<span class="k">p95</span> ' + c.dataset.l + '<br>' +
+        '<span class="k">mAP@0.5</span> ' + c.dataset.m + '<br>' +
+        '<span class="k">size</span> ' + c.dataset.s;
+      tip.style.opacity = '1';
+      var fr = fig.getBoundingClientRect();
+      var pr = c.getBoundingClientRect();
+      var x = pr.left - fr.left + pr.width/2;
+      var y = pr.top - fr.top;
+      tip.style.left = Math.max(6, Math.min(x - tip.offsetWidth/2, fr.width - tip.offsetWidth - 6)) + 'px';
+      tip.style.top = Math.max(6, y - tip.offsetHeight - 12) + 'px';
+    }
+    c.addEventListener('mouseenter', show);
+    c.addEventListener('focus', show);
+    c.addEventListener('mouseleave', function(){ tip.style.opacity = '0'; });
+    c.addEventListener('blur', function(){ tip.style.opacity = '0'; });
+    c.setAttribute('tabindex','0');
+  });
+})();
+</script>
 </body>
 </html>
