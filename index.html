@@ -137,6 +137,7 @@
     <a href="#offroad">offroad-bevfusion</a>
     <a href="#aeroedge">AeroEdge</a>
     <a href="#mrs">Reuse Scanner</a>
+    <a href="#sigint">SIGINT-Fusion</a>
     <a href="#more">More work</a>
     <a href="#experience">Experience</a>
   </div>
@@ -419,8 +420,63 @@
 </section>
 
 <!-- ============ PROJECT 4 ============ -->
+<section id="sigint">
+  <div class="kicker">Project 04 · distributed ML platform</div>
+  <div class="phead">
+    <h2>SIGINT-Fusion</h2>
+    <span class="status live">New</span>
+  </div>
+  <p class="sub">Simulated RF sensors stream I/Q captures through a Java ingest gateway and Kafka into an ONNX
+  modulation classifier, a Kalman/Hungarian emitter fuser, and a RAG analyst agent that answers operator questions
+  and writes reports.</p>
+
+  <div class="shots">
+    <figure>
+      <img src="assets/sigint-overview.png" alt="Operator console overview with spectrum waterfall, bearing rose and live detections" loading="lazy">
+      <figcaption>Overview: spectrum waterfall, EOB bearing rose, and live detections at 1.82 ms p50 classification.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/sigint-analyst.png" alt="Analyst page showing a grounded answer about a 9400 MHz emitter with a saved report" loading="lazy">
+      <figcaption>Analyst: a LangGraph agent identifies an emitter from retrieved catalogue entries and saves a report.</figcaption>
+    </figure>
+  </div>
+
+  <p class="body">
+    Nine containerised services with health checks: a <b>Spring Boot 3 / Java 21</b> validated ingest gateway,
+    <b>Kafka</b> transport, a Python consumer running <b>ONNX Runtime</b> classification plus classical DSP (Welch PSD,
+    STFT, vectorised CA-CFAR, DBSCAN pulse deinterleaving), a <b>Kalman + Hungarian</b> fuser building the electronic
+    order of battle in Postgres, a <b>pgvector hybrid-retrieval</b> corpus, a <b>LangGraph</b> analyst agent with 8 tools
+    exposed over MCP, and a React operator console. The classifier is a ResNet-1D trained on <b>real DeepSig RadioML
+    2018.01A</b>, pretrained on 2016.10a-layout frames and fine-tuned.
+  </p>
+
+  <div class="grid2">
+    <div class="fact"><span class="n">75.7% top-1</span><span class="lbl">21 modulations, real RadioML 2018.01A, SNR -10 to 30 dB (96% at 30 dB, 94% at 10 dB)</span></div>
+    <div class="fact"><span class="n">87.6% ± 4.3</span><span class="lbl">5-shot on 3 modulations never seen in training, 50 episodes, chance 33%</span></div>
+    <div class="fact"><span class="n">hit@5 100% · MRR 0.93</span><span class="lbl">hybrid dense + full-text retrieval over 53 questions; analyst agent 10/10 tasks on qwen2.5:7b</span></div>
+    <div class="fact"><span class="n">1.48 ms model · 251 req/s</span><span class="lbl">classify service, CPU ONNX Runtime, 32 concurrent, n=2000 (end-to-end p50 110 ms)</span></div>
+  </div>
+
+  <div class="note">
+    <b>The headline result is a negative one.</b> Pretraining on my synthetic channel model did <em>not</em> transfer to
+    real frames: against from-scratch training it scored -0.4 pp at full data and -4.1 pp at 10%, and frozen synthetic
+    features reached only ~71% against ~87%. The synthetic generator is a pipeline stand-in, not a substitute for
+    licensed data, and every table labels which one produced it. BYOL also lost ground (-2.7 pp at 10% data), and a
+    ViT-tiny on STFT spectrograms was far worse than the ResNet-1D (48.6% against 75.7%). Specific emitter ID and pulse
+    deinterleaving run on synthetic fingerprints, so their near-perfect scores measure the pipeline, not the physics.
+    The one real 2016.10a slice available is a single-SNR mirror whose test frames may overlap the pretraining split, so
+    it is reported as indicative only.
+  </div>
+
+  <div class="links-row">
+    <a class="btn primary" href="https://github.com/pavanyadava007/sigint-fusion">Code &amp; full results</a>
+    <a class="btn" href="https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md">Run log &amp; per-SNR curves</a>
+  </div>
+</section>
+
+
 <section id="nxp">
-  <div class="kicker">Project 04 · agents for hardware</div>
+  <div class="kicker">Project 05 · agents for hardware</div>
   <div class="phead">
     <h2>AI-Driven Hardware Validation &amp; Reporting Agent</h2>
   </div>
@@ -543,12 +599,12 @@
   <div class="kicker">Skills</div>
   <h2>What I work with</h2>
   <div class="skills">
-    <div class="skill"><h3>3D Perception</h3><p>BEV perception (LSS, deformable attention), 3D detection (CenterPoint, PointPillars), semantic segmentation, occupancy prediction, multitask learning, LiDAR-camera-radar fusion, end-to-end autonomy, 2D detection (YOLO11), domain-shift evaluation</p></div>
+    <div class="skill"><h3>Perception &amp; Signals</h3><p>BEV perception (LSS, deformable attention), 3D detection (CenterPoint, PointPillars), semantic segmentation, occupancy prediction, multitask learning, LiDAR-camera-radar fusion, end-to-end autonomy, 2D detection (YOLO11), domain-shift evaluation, RF modulation classification, classical DSP (PSD, STFT, CFAR), Kalman/Hungarian multi-target fusion, few-shot and self-supervised (BYOL) transfer</p></div>
     <div class="skill"><h3>Deployment &amp; Compression</h3><p>TensorRT (FP16 / INT8 PTQ), static-shape ONNX export and parity testing, ONNX Runtime (Python, Rust, WebAssembly), ROS 2 Humble C++ nodes, quantization / pruning / distillation, latency and memory benchmarking, Docker</p></div>
-    <div class="skill"><h3>MLOps &amp; Systems</h3><p>DVC pipelines, MLflow, Weights &amp; Biases, GitHub Actions CI, pytest, ruff, signed OTA bundles, MQTT canary rollout with automatic rollback, FastAPI, Postgres/pgvector, React, distributed GPU training (Slurm, FSDP)</p></div>
+    <div class="skill"><h3>MLOps &amp; Systems</h3><p>DVC pipelines, MLflow, Weights &amp; Biases, GitHub Actions CI, pytest, ruff, signed OTA bundles, MQTT canary rollout with automatic rollback, Kafka, Spring Boot / Java 21, FastAPI, Postgres/pgvector, React, Docker Compose, distributed GPU training (Slurm, FSDP)</p></div>
     <div class="skill"><h3>LLM / VLM</h3><p>Qwen2.5-VL LoRA fine-tuning, vision-language action grounding with deterministic safety overrides, on-premise RAG (Ollama, hybrid dense + lexical retrieval, citation and refusal evaluation), agentic tool use over MCP, vLLM serving</p></div>
     <div class="skill"><h3>Safety &amp; Process</h3><p>ISO 26262 (ASIL-B), ISO 21448 (SOTIF), MISRA C++, hazard analysis and release gates, automated KPI pipelines, simulation-based validation, HIL tooling</p></div>
-    <div class="skill"><h3>Languages</h3><p>Python, C++, Rust, C, SQL, TypeScript. English (fluent), German (learning, working in a German-speaking environment), Kannada, Hindi.</p></div>
+    <div class="skill"><h3>Languages</h3><p>Python, C++, Rust, C, SQL, TypeScript. English (C1), German (B2), Kannada, Hindi.</p></div>
   </div>
 </section>
 
