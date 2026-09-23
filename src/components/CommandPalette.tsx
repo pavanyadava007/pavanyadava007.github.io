@@ -3,6 +3,29 @@ import { Command } from 'cmdk';
 import type { PaletteItem } from '~/lib/palette';
 import './command-palette.css';
 
+interface PagefindResult {
+  id: string;
+  data: () => Promise<{ url: string; meta: { title?: string }; excerpt: string }>;
+}
+interface Pagefind {
+  search: (q: string) => Promise<{ results: PagefindResult[] }>;
+}
+
+/**
+ * Pagefind's index is a static bundle written at build time. It is loaded the first
+ * time someone types a query, not when the palette opens, so the palette stays instant
+ * and the index costs nothing to anyone who only uses it to jump between pages.
+ */
+let pagefind: Promise<Pagefind> | null = null;
+function loadPagefind(): Promise<Pagefind> {
+  pagefind ??= (
+    import(
+      /* @vite-ignore */ `${import.meta.env.BASE_URL}pagefind/pagefind.js`
+    ) as Promise<Pagefind>
+  ).catch(() => ({ search: async () => ({ results: [] }) }));
+  return pagefind;
+}
+
 const GROUP_ORDER = ['Projects', 'Pages', 'Links', 'Actions'] as const;
 
 export default function CommandPalette({
@@ -14,6 +37,8 @@ export default function CommandPalette({
 }) {
   const [open, setOpen] = useState(startOpen);
   const [toast, setToast] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [hits, setHits] = useState<{ url: string; title: string; excerpt: string }[]>([]);
   const restoreFocus = useRef<HTMLElement | null>(null);
 
   const grouped = useMemo(
@@ -57,6 +82,33 @@ export default function CommandPalette({
     return () => document.removeEventListener('astro:page-load', rebind);
   }, []);
 
+  // Full-text search over the built site, once the query is worth a lookup.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 3) {
+      setHits([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const pf = await loadPagefind();
+      const { results } = await pf.search(q);
+      const top = await Promise.all(results.slice(0, 5).map((r) => r.data()));
+      if (cancelled) return;
+      setHits(
+        top.map((d) => ({
+          url: d.url.replace(/\.html$/, '').replace(/\/index$/, '') || '/',
+          title: d.meta.title ?? d.url,
+          excerpt: d.excerpt.replace(/<[^>]+>/g, ''),
+        })),
+      );
+    }, 160);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [query]);
+
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 2400);
@@ -94,11 +146,33 @@ export default function CommandPalette({
             loop
           >
             <div className="cmdk__bar">
-              <Command.Input autoFocus placeholder="Jump to a project, page or link…" />
+              <Command.Input
+                autoFocus
+                value={query}
+                onValueChange={setQuery}
+                placeholder="Jump to a project, or search the whole site…"
+              />
               <kbd className="cmdk__esc">Esc</kbd>
             </div>
             <Command.List>
               <Command.Empty>No match.</Command.Empty>
+              {hits.length > 0 && (
+                <Command.Group heading="On this site">
+                  {hits.map((hit) => (
+                    <Command.Item
+                      key={hit.url}
+                      value={`${hit.title} ${hit.excerpt}`}
+                      onSelect={() => {
+                        show(false);
+                        window.location.href = hit.url;
+                      }}
+                    >
+                      <span>{hit.title}</span>
+                      <span className="cmdk__hint">{hit.excerpt.slice(0, 70)}…</span>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
               {grouped.map(([group, entries]) => (
                 <Command.Group key={group} heading={group}>
                   {entries.map((item) => (

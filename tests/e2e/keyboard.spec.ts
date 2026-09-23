@@ -69,3 +69,16 @@ test.describe('keyboard only', () => {
     expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe(after);
   });
 });
+
+test.describe('search', () => {
+  test('the palette searches the whole site, not just page titles', async ({ page }) => {
+    await page.goto('/');
+    await page.keyboard.press('ControlOrMeta+k');
+    // A phrase that appears in a case study's body but in no page title or nav label.
+    await page.locator('.cmdk [cmdk-input]').fill('prunable groups');
+    await expect(page.locator('[cmdk-group-heading]', { hasText: 'On this site' })).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.locator('[cmdk-item]', { hasText: 'AeroEdge' }).first()).toBeVisible();
+  });
+});
