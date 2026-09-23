@@ -65,6 +65,59 @@ import { site } from '~/lib/site';
   </p>
 </section>
 
+<script>
+  /**
+   * Decide whether this device should get the live scene at all, then load it late.
+   *
+   * three.js is ~150 kB and must never be on the LCP path, so the import waits for
+   * `load` and then for idle time. Everything below is a reason to keep the static
+   * poster instead - the poster is the same scene, so nothing is lost.
+   */
+  function shouldRender(): boolean {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
+      .connection;
+    if (conn?.saveData) return false;
+    if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) return false;
+
+    const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+    if (typeof mem === 'number' && mem < 4) return false;
+
+    try {
+      const probe = document.createElement('canvas');
+      if (!probe.getContext('webgl2') && !probe.getContext('webgl')) return false;
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  let handle: { destroy(): void } | null = null;
+
+  async function boot() {
+    const host = document.querySelector<HTMLElement>('[data-hero-scene]');
+    const canvas = host?.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
+    if (!host || !canvas || handle || !shouldRender()) return;
+    const { startHeroScene } = await import('./hero-scene');
+    handle = startHeroScene(canvas, host);
+  }
+
+  function schedule() {
+    const idle =
+      window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 400));
+    idle(() => void boot(), { timeout: 3000 } as IdleRequestOptions);
+  }
+
+  if (document.readyState === 'complete') schedule();
+  else window.addEventListener('load', schedule, { once: true });
+
+  document.addEventListener('astro:before-swap', () => {
+    handle?.destroy();
+    handle = null;
+  });
+</script>
+
 <style>
   /* The hero is a viewport, not a page section: it stays dark in both themes, the way
      an rviz or oscilloscope panel does. Its own colours are declared here rather than
