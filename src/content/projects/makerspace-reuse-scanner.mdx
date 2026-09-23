@@ -1,0 +1,90 @@
+---
+title: Makerspace Reuse Scanner
+order: 4
+kicker: Project 04 · applied CV + RAG
+claim: An edge camera detects reusable parts on a belt and an on-premise German/English RAG assistant answers disposal questions with citations.
+description: YOLO11n on a belt feed, a FastAPI + pgvector inventory hub, and a fully local hybrid-retrieval RAG assistant that cites its sources or declines.
+status: live
+featured: true
+categories: [llm-rag, perception, edge-mlops]
+stack: [YOLO11n, ONNX Runtime, FastAPI, Postgres/pgvector, Ollama llama3.1:8b, nomic-embed-text, React, Docker Compose, WebSocket]
+poster: mrs-live.png
+tldr: Four containers and one compose up - an edge worker running YOLO11n/ONNX on a video or webcam stream, a FastAPI + pgvector hub with a WebSocket live feed and dedupe, a React GUI, and a fully on-premise RAG stack over a bilingual disposal corpus. Retrieval is hybrid (dense vectors plus IDF-weighted Postgres full-text) because vector-only retrieval was measured missing rare literals, and stock questions are grounded on a live inventory snapshot rather than on the model's memory.
+metrics:
+  - value: 20/20 · 3/3 · 2/2
+    label: RAG eval, 25 hand-verified questions
+    n: expected doc cited, out-of-corpus declined, inventory questions grounded
+    source: https://github.com/pavanyadava007/makerspace-reuse-scanner
+  - value: 2.44 s median
+    label: per question, warm llama3.1:8b, k=4
+    n: answered in the question's language
+    source: https://github.com/pavanyadava007/makerspace-reuse-scanner
+  - value: mAP50 0.410
+    label: detector on the held-out test split
+    dataset: 9 classes, public data only (v0-public)
+    source: https://huggingface.co/pavanyadava07/makerspace-yolo11n
+  - value: Vector-only → hybrid
+    label: retrieval fix driven by a measured failure
+    n: vector-only missed rare literals (Kamin, PVC) and the model invented a hazard claim; hybrid fixed it
+    source: https://github.com/pavanyadava007/makerspace-reuse-scanner
+arch:
+  title: Four containers, one compose up
+  caption: The detector and the assistant share one database, which is what lets a stock question be answered from live inventory instead of from the model's memory.
+  nodes:
+    - { id: cam, label: Belt camera, detail: 'Video file or webcam stream into the edge worker.', col: 0, row: 1, kind: input }
+    - { id: edge, label: Edge worker, detail: 'YOLO11n exported to ONNX, 9 classes. mAP50 0.410 on the held-out test split, public data only.', col: 1, row: 1 }
+    - { id: hub, label: FastAPI hub, detail: 'WebSocket live feed, dedupe across frames, material class and bin route per item.', col: 2, row: 1 }
+    - { id: db, label: Postgres + pgvector, detail: 'Live inventory and the embedded disposal corpus in one database.', col: 3, row: 1 }
+    - { id: dense, label: Dense retrieval, detail: 'nomic-embed-text vectors. On its own it missed rare literals like Kamin and PVC.', col: 4, row: 0 }
+    - { id: lex, label: IDF full-text, detail: 'Postgres lexical search, IDF-weighted. Added after the measured vector-only failure.', col: 4, row: 2 }
+    - { id: llm, label: Ollama llama3.1:8b, detail: 'Fully on-premise. 2.44 s median per question at k=4, answered in the question language.', col: 5, row: 1 }
+    - { id: ans, label: Cited answer or refusal, detail: '20/20 expected documents cited, 3/3 out-of-corpus questions declined, 2/2 inventory questions grounded on the live snapshot.', col: 6, row: 1, kind: output }
+  edges:
+    [[cam, edge], [edge, hub], [hub, db], [db, dense], [db, lex], [dense, llm], [lex, llm], [llm, ans]]
+limits:
+  - kind: small-n
+    text: The detector is trained on public data only. screw (0.995) and pcb (0.994) are studio single-object shots and inflated; battery (0.030) and tool (0.049) have too little data to be usable.
+  - kind: not-measured
+    text: 6 of 15 planned classes have no data at all. The dominant error is missed detection, not confusion.
+  - kind: not-measured
+    text: No Raspberry Pi 5 benchmark - no device. The edge worker is measured on the development host only.
+  - kind: other
+    text: Refusal scoring is a regex heuristic, so the report ships every answer verbatim for manual review rather than claiming an automated refusal score.
+links:
+  demo: https://huggingface.co/spaces/pavanyadava07/makerspace-reuse-scanner
+  code: https://github.com/pavanyadava007/makerspace-reuse-scanner
+  modelCard: https://huggingface.co/pavanyadava07/makerspace-yolo11n
+---
+
+## Problem & constraints
+
+A makerspace throws away parts that are still good because nobody can tell, at the bin, what a
+thing is made of and where it should go. The constraint that shaped everything was **on-premise**:
+no cloud API, no data leaving the building, and a corpus that is bilingual because the disposal
+rules are written in German and the people reading them are not all German speakers.
+
+That rules out the easy version. A local 8B model has a much smaller margin for retrieval error
+than a frontier API does, so retrieval quality is the whole system - and a wrong answer about a
+hazardous material is worse than no answer, which makes refusal a feature rather than a failure.
+
+## Results
+
+On 25 hand-verified questions the assistant cited the expected document **20/20** times, declined
+**3/3** out-of-corpus questions, and grounded **2/2** stock questions on the live inventory
+snapshot rather than answering from memory. Median latency is **2.44 s** per question on a warm
+`llama3.1:8b` at k=4, and answers come back in the language the question was asked in.
+
+The detector reaches **mAP50 0.410** on the held-out test split across 9 classes - a number that
+is only meaningful with its caveats attached, which is why they are in the limits panel rather
+than a footnote.
+
+## Ablations
+
+The retrieval change was driven by a measured failure, not a hunch. With vector-only retrieval,
+questions containing rare literals - `Kamin`, `PVC` - retrieved the wrong chunks, and the model
+filled the gap by **inventing a hazard claim**. Dense embeddings do not reliably preserve a rare
+token that carries all the meaning of the query.
+
+Adding IDF-weighted Postgres full-text search alongside the dense vectors fixed those cases. The
+useful lesson is the ordering: the hybrid retriever exists because there was an evaluation that
+could catch the failure, not because hybrid retrieval is fashionable.

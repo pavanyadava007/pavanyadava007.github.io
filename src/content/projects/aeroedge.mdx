@@ -1,0 +1,103 @@
+---
+title: AeroEdge
+order: 3
+kicker: Project 03 · edge MLOps
+claim: One aerial-detection model compressed to 3.2 MB INT8 and shipped to a 20-device edge fleet through signed OTA canary rollouts.
+description: The full lifecycle of an edge model - INT8 quantization, release gates, signed bundles, MQTT canary rollout with rollback, and a parity-tested Rust runtime.
+status: live
+featured: true
+categories: [edge-mlops, perception]
+stack: [YOLO11n, ONNX Runtime, INT8 PTQ, MQTT, Docker, Rust (ort 2.0-rc.13), FastAPI, GitHub Actions]
+tldr: aero_v1 (VisDrone + DOTA-v1) trains a YOLO11n at 960 px, exports to static-shape ONNX with NMS outside the graph, quantizes to INT8, passes release gates, gets signed, and rolls out over MQTT across 20 Docker agents with automatic rollback. A second inference path in Rust is CI-gated to box-level IoU > 0.99 against the Python runtime. On this CPU, INT8 turned out to be slower and less accurate than FP32 - it ships for artefact size alone.
+metrics:
+  - value: 10.61 → 3.17 MB
+    label: FP32 → INT8 QDQ ONNX (3.3x)
+    n: mAP@0.5 0.569 → 0.523 on the deployed runtime path
+    source: https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md
+  - value: 90.6 s / 4.7 s
+    label: canary 5% → 50% → 100% across 20 live agents, 0 failures
+    n: abort → all devices reverted in 4.7 s
+    hardware: 20 Docker agents over real MQTT, 30 s health windows
+    source: https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md
+  - value: p95 29.6 ms · 34 FPS
+    label: INT8 @640, ORT 8 threads
+    hardware: x86 AMD EPYC 7R13, 5-min soak, RSS 184 MB
+    source: https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md
+  - value: -20% RSS
+    label: Rust runtime vs Python on the same .so and model
+    n: 134.8 vs 168.7 MB; 109 ms cold start
+    source: https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md
+arch:
+  title: Train once, gate hard, ship signed
+  caption: The interesting part is not the model - it is that a release can be refused. Hover a node to see what it checks.
+  nodes:
+    - { id: data, label: aero_v1 dataset, detail: 'VisDrone + DOTA-v1, 12,519 / 2,263 / 1,610 images, ~500k boxes, 8-class aerial taxonomy.', col: 0, row: 1, kind: input }
+    - { id: train, label: YOLO11n @960, detail: 'No custom architecture. Val mAP@0.5 0.688 at 960 px.', col: 1, row: 1 }
+    - { id: onnx, label: Static ONNX, detail: 'opset 17, static shape, NMS outside the graph so the runtime owns post-processing. 10.61 MB FP32.', col: 2, row: 1 }
+    - { id: int8, label: INT8 PTQ (QDQ), detail: '3.17 MB, 3.3x smaller. mAP@0.5 0.569 -> 0.523 and ~3 ms SLOWER than FP32 on this CPU.', col: 3, row: 1 }
+    - { id: gates, label: Release gates, detail: 'size <= 8 MB PASS, p95 <= 40 ms PASS, accuracy within -1 pp FAILS for INT8. The release requires an explicit override - the gate is doing its job.', col: 4, row: 1, kind: guard }
+    - { id: sign, label: Signed bundle, detail: 'Tampered bundles are rejected by the agent before the swap.', col: 5, row: 1 }
+    - { id: mqtt, label: MQTT canary, detail: '5% -> 50% -> 100% across 20 Docker agents with 30 s health windows. Full rollout 90.6 s, 0 failures.', col: 6, row: 1 }
+    - { id: rollback, label: Automatic rollback, detail: 'Abort broadcast reverts every switched device in 4.7 s. A canary false-positive from post-swap cold-start latency was found and fixed live.', col: 6, row: 2, kind: guard }
+    - { id: rust, label: Rust runtime, detail: 'ort 2.0-rc.13, same .so and model. CI-gated to box-level IoU > 0.99 against Python. -20% RSS, 109 ms cold start.', col: 5, row: 2, kind: output }
+  edges:
+    [[data, train], [train, onnx], [onnx, int8], [int8, gates], [gates, sign], [sign, mqtt], [mqtt, rollback], [sign, rust]]
+limits:
+  - kind: failed
+    text: INT8 measured ~3 ms slower than FP32 on this EPYC CPU (QDQ overhead), so the INT8 win here is size only, not speed.
+  - kind: failed
+    text: The strict -1 pp accuracy gate fails for INT8 and the release requires an explicit override. The gate is doing its job and the override is recorded.
+  - kind: failed
+    text: Quantizing the head's final Concat silently produced mAP 0.000 - box coordinates and probabilities share one uint8 scale.
+  - kind: failed
+    text: QAT was blocked by torch 2.6 removing prepare_qat_fx; structured pruning found 0 prunable groups on YOLO11; distillation gave no gain (0.6835 vs 0.6878) and was not shipped.
+  - kind: not-measured
+    text: Jetson, Pi 5 and Coral rows stay unmeasured - no such hardware. Export paths are defined, budgets are not claimed.
+links:
+  demo: https://huggingface.co/spaces/pavanyadava07/aeroedge
+  code: https://github.com/pavanyadava007/aeroedge
+  results: https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md
+  modelCard: https://huggingface.co/pavanyadava07/aeroedge-yolo11n
+---
+
+## Problem & constraints
+
+Most model-compression write-ups stop at the conversion script. The question this project was
+built to answer is the one that actually decides a release: *given a measured accuracy loss, does
+this artefact ship, and what happens to 20 devices if it is wrong?*
+
+So the constraints were process constraints rather than model constraints. Every candidate has to
+pass a fixed gate set before it can be signed. Every bundle is signed and verified on the device
+before the swap. The rollout is staged with health windows and can be aborted from outside. And a
+second inference path in a different language has to agree with the first to box-level IoU > 0.99,
+so that "it works in Python" is not the only evidence.
+
+## Results
+
+The rollout numbers are the ones I trust most, because they were measured against 20 live agents
+over real MQTT rather than simulated: a full **5% → 50% → 100% canary in 90.6 s with 0 failures**,
+and an abort that reverted every switched device in **4.7 s**. Running that repeatedly surfaced a
+real bug - a canary false-positive caused by post-swap cold-start latency being counted as a
+health failure - which is the kind of thing that only appears when you actually do the rollout.
+
+The Rust runtime reached **-20% RSS** (134.8 vs 168.7 MB) on the same `.so` and the same model,
+with a 109 ms cold start, and is CI-gated against the Python path so the two cannot drift.
+
+## Ablations
+
+The compression result is a negative one and it is the most useful thing in the project.
+
+INT8 post-training quantization does what it is supposed to do on size: **10.61 MB → 3.17 MB**,
+a 3.3x reduction. On this AMD EPYC 7R13 it also made inference about **3 ms slower** (QDQ
+overhead) and cost **4.6 points of mAP@0.5** (0.569 → 0.523). Both INT8 points sit below and to
+the right of their FP32 counterparts, so the Pareto front on this CPU is the two FP32 builds.
+
+INT8 still ships - but for exactly one reason, stated plainly: a 3.3x smaller artefact to push
+over the air to 20 devices. On a device with INT8 acceleration the trade would look different,
+and there is no such device here, so no such claim is made.
+
+Three other compression routes were tried and none shipped. Quantizing the head's final `Concat`
+produced **mAP 0.000**, because box coordinates and class probabilities cannot share one uint8
+scale. QAT was blocked by torch 2.6 removing `prepare_qat_fx`. Structured pruning found **0
+prunable groups** on YOLO11, and distillation came in at 0.6835 against a 0.6878 baseline - no
+gain, not shipped.

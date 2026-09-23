@@ -1,0 +1,80 @@
+---
+/** Dark by default, respects prefers-color-scheme, persisted in localStorage. */
+---
+
+<button
+  id="theme-toggle"
+  class="theme-toggle"
+  type="button"
+  aria-pressed="false"
+  title="Switch between the dark and light instrument themes"
+>
+  <span class="sr-only">Theme:</span>
+  <span aria-hidden="true" class="theme-toggle__dot"></span>
+  <span class="theme-toggle__label" data-theme-label>Dark</span>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.28rem 0.7rem 0.28rem 0.55rem;
+    font-family: var(--font-mono-stack);
+    font-size: var(--t-xs);
+    color: var(--fg-muted);
+    cursor: pointer;
+    transition:
+      border-color 200ms var(--ease),
+      color 200ms var(--ease);
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--fg);
+  }
+  .theme-toggle__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .theme-toggle__label {
+    min-width: 3.1em;
+    text-align: left;
+  }
+</style>
+
+<script>
+  // The theme is applied by the inline script in Base.astro before paint; this only toggles.
+  function wire() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+
+    const sync = () => {
+      const theme = document.documentElement.dataset.theme ?? 'dark';
+      const label = btn.querySelector('[data-theme-label]');
+      if (label) label.textContent = theme === 'light' ? 'Light' : 'Dark';
+      btn.setAttribute('aria-pressed', String(theme === 'light'));
+    };
+
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {
+        /* private mode, blocked storage - the toggle still works for this page view */
+      }
+      sync();
+      document.dispatchEvent(new CustomEvent('themechange', { detail: next }));
+    });
+    sync();
+  }
+  wire();
+  document.addEventListener('astro:page-load', wire);
+</script>

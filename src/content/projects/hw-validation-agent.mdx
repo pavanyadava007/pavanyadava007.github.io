@@ -1,0 +1,83 @@
+---
+title: AI-Driven Hardware Validation & Reporting Agent
+order: 6
+kicker: Project 06 · agents for hardware
+claim: A GenAI agent over a silicon validation database that answers whether an ML anomaly model beats the spec-limit screen already in use.
+description: A LangGraph agent with 14 audited tools over MCP turning 240 validation runs and 92,160 measurements into reports, diagrams and AEC-Q100 test plans.
+status: live
+featured: false
+categories: [hardware, llm-rag]
+stack: [LangGraph, MCP, PostgreSQL, SQLite, scikit-learn, Random Forest, Python, pytest, ruff]
+tldr: 240 validation runs and 92,160 measurements behind a LangGraph agent with 14 audited tools exposed over MCP and read-only SQL guards. The modelling side compares five detectors on a split grouped by device serial, so no die appears on both sides. The supervised model reaches F1 0.900 against the spec-limit screen's 0.531 - and the rank-fused ensemble is worse than the supervised model alone, which is reported rather than hidden.
+metrics:
+  - value: F1 0.531 → 0.900
+    label: spec-limit screen → supervised RF on a DUT-grouped hold-out
+    n: ROC-AUC 0.963
+    source: https://github.com/pavanyadava007/nxp-hw-validation-agent
+  - value: 14 escapes · 3 overkills
+    label: real defects that passed every spec limit, and healthy parts the limit screen wrongly failed
+    source: https://github.com/pavanyadava007/nxp-hw-validation-agent
+  - value: 92,160 measurements
+    label: 240 runs, 40 injected faults
+    n: anomaly detection + report generation
+    source: https://github.com/pavanyadava007/nxp-hw-validation-agent
+  - value: 6.1k LOC · 97 tests
+    label: ruff-clean, typed, CI on SQLite and live PostgreSQL
+    source: https://github.com/pavanyadava007/nxp-hw-validation-agent
+arch:
+  title: Question to audited answer
+  caption: Every tool the agent can call is read-only against the database and is logged. Hover a node to see what it is allowed to do.
+  nodes:
+    - { id: q, label: Lab question, detail: 'Natural language, e.g. "does the anomaly model beat the spec screen on this campaign?"', col: 0, row: 1, kind: input }
+    - { id: agent, label: LangGraph agent, detail: '14 audited tools exposed over MCP.', col: 1, row: 1 }
+    - { id: sql, label: Read-only SQL guard, detail: 'The agent cannot write. Every query is logged. CI runs on SQLite and on live PostgreSQL.', col: 2, row: 1, kind: guard }
+    - { id: db, label: Validation database, detail: '240 runs, 92,160 measurements, 40 injected faults.', col: 3, row: 1 }
+    - { id: split, label: DUT-grouped split, detail: 'Grouped by device serial, so no die appears on both sides of the split. This is what stops the 0.900 from being leakage.', col: 4, row: 1, kind: guard }
+    - { id: rf, label: Supervised RF, detail: 'F1 0.900, ROC-AUC 0.963 against the spec-limit screen at F1 0.531.', col: 5, row: 0 }
+    - { id: fuse, label: Rank-fused ensemble, detail: 'F1 0.816 - WORSE than the supervised model alone. Kept only as the cold-start path for a new product with no failure-analysis labels.', col: 5, row: 2 }
+    - { id: report, label: Report / diagram / AEC-Q100 plan, detail: 'Generated from the query result, not from the model prior.', col: 6, row: 1, kind: output }
+  edges:
+    [[q, agent], [agent, sql], [sql, db], [db, split], [split, rf], [split, fuse], [rf, report], [fuse, report]]
+limits:
+  - kind: failed
+    text: The rank-fused ensemble (0.816) is worse than the supervised model alone (0.900) - rank averaging drags a strong learner toward two weaker ones. Fusion is kept only as the cold-start path for a new product with no failure-analysis labels.
+  - kind: small-n
+    text: 240 runs is a small campaign, so the confidence intervals are wide.
+links:
+  code: https://github.com/pavanyadava007/nxp-hw-validation-agent
+---
+
+## Problem & constraints
+
+Silicon validation labs already have an anomaly detector: the spec limit. Any proposal to replace
+it with machine learning has to answer one question before any other - does it catch failures the
+limit screen misses, on a split that cannot leak?
+
+That constraint is the whole design. Test measurements from the same die are highly correlated, so
+a random row split will happily report a beautiful F1 that means nothing. The split here is
+**grouped by device serial**: no die appears on both sides. Everything downstream is only as
+credible as that grouping.
+
+The second constraint is that an agent with database access in a validation lab is a liability
+unless it is boxed in. All 14 tools are read-only, guarded at the SQL layer, and logged, and CI
+runs the suite against both SQLite and a live PostgreSQL so the guard is tested where it will run.
+
+## Results
+
+On the DUT-grouped hold-out the supervised Random Forest reaches **F1 0.900 with ROC-AUC 0.963**,
+against the spec-limit screen's **F1 0.531**. The concrete version of that number is more useful
+than the number: **14 escapes** - real defects that passed every spec limit - and **3 overkills**,
+healthy parts the limit screen wrongly failed.
+
+The agent side turns 240 runs and 92,160 measurements into reports, block diagrams and AEC-Q100
+test plans on request, with 97 tests and a ruff-clean, typed 6.1k LOC codebase behind it.
+
+## Ablations
+
+Five detectors were compared on the same grouped split. The result worth reporting is the one that
+went the wrong way: the **rank-fused ensemble scored 0.816**, below the supervised model's 0.900.
+Rank averaging pulls a strong learner toward two weaker ones, and a fusion that is only defensible
+as "ensembles are usually better" is not defensible.
+
+Fusion is kept in the codebase for one specific case and labelled as such - the cold start, where
+a new product has no failure-analysis labels at all and a supervised model cannot be trained yet.

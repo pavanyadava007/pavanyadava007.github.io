@@ -1,0 +1,111 @@
+---
+title: LangGrasp
+order: 1
+kicker: Project 01 · language-guided manipulation
+claim: '"Pick the blue screwdriver" becomes a box, a mask, a grasp pose and a motion on a simulated SO-101 arm.'
+description: Open-vocabulary grounding, a fine-tuned segmenter, depth fusion and a scripted IK executor under an ISO 26262 / SOTIF style safety monitor.
+status: live
+featured: true
+categories: [robotics, llm-rag, perception]
+stack: [Grounding DINO, YOLO11n-seg, TensorRT, ONNX, MuJoCo, ROS 2 Humble, LeRobot ACT, PPO, Python]
+poster: langgrasp-live.png
+tldr: A natural-language command is grounded once by Grounding DINO tiny, segmented by a fine-tuned YOLO11n-seg exported to TensorRT, back-projected into a point cloud and turned into a grasp pose, then executed by a damped-least-squares IK controller under a latched-e-stop safety monitor. 115 of 120 stratified trials placed the right object; the arm, the camera and the Jetson do not exist, so every number is simulation on an NVIDIA L4 and says so.
+metrics:
+  - value: 115/120 placed
+    label: full language pipeline, 120 stratified trials
+    n: 120 trials [91-98% Wilson]; seen 39/40, unseen 39/40, language variation 37/40; grounding correct 115/119
+    hardware: NVIDIA L4 (x86 EC2 host), MuJoCo simulation
+    source: https://github.com/pavanyadava007/langgrasp/blob/master/docs/RESULTS.md
+  - value: 682 ms per command
+    label: median end to end
+    hardware: NVIDIA L4
+    n: 'grounding 275 ms, segmentation 13 ms, depth fusion 3.5 ms; YOLO11n-seg 0.81 ms in TensorRT FP16 against 7.0 ms in PyTorch'
+    source: https://github.com/pavanyadava007/langgrasp/blob/master/docs/RESULTS.md
+  - value: -9 placements
+    label: cost of removing the HSV colour check
+    n: '106/120; removing the YOLO mask costs the same, and screwdrivers fall from 39/41 to 30/41'
+    source: https://github.com/pavanyadava007/langgrasp/blob/master/docs/RESULTS.md
+  - value: 120/120 vs 73/120
+    label: safety limit found by the interface
+    n: "enforcing the safety monitor's 1.5 rad/s limit breaks the executor, which peaks at 21.8 rad/s, so the GUI reports clipping instead of applying it"
+    source: https://github.com/pavanyadava007/langgrasp/blob/master/docs/FMEA.md
+latency:
+  mode: stages
+  title: Where the 682 ms goes
+  hardware: NVIDIA L4 (x86 EC2 host), MuJoCo render included in capture, n=119 commands
+  total: 682.2 ms end to end (median)
+  caption: Medians of each stage recorded during the 119 protocol commands. They do not sum to the end-to-end median because each column is its own median, and these runs shared the GPU with ACT and YOLO training, so they are upper bounds. `execute` is simulation compute for the motion, not robot motion time.
+  stages:
+    - { name: parse, ms: 0.1 }
+    - { name: capture (MuJoCo render), ms: 7.5 }
+    - { name: grounding (GDINO tiny), ms: 296.8, note: single grounding pass per command }
+    - { name: segmentation (YOLO11n-seg), ms: 13.2, note: 0.81 ms in TensorRT FP16 on the clean bench }
+    - { name: depth fusion, ms: 3.5 }
+    - { name: execute (sim compute), ms: 337.3, note: 10 Hz DLS-IK ticks, not robot motion time }
+arch:
+  title: Command to motion
+  caption: Hover a node for what it costs and what it is allowed to do. The safety monitor is not a stage in the path - it wraps the executor and can latch an e-stop at any tick.
+  nodes:
+    - { id: cmd, label: Command, detail: 'Free-text instruction, parsed to object + attribute + spatial relation. 0.1 ms.', col: 0, row: 1, kind: input }
+    - { id: cam, label: Front camera, detail: '640x480 RGB-D from the MuJoCo scene. Capture 7.5 ms including render.', col: 0, row: 2, kind: input }
+    - { id: gdino, label: Grounding DINO tiny, detail: 'Open-vocabulary detection, one pass per command. 296.8 ms median - the dominant cost.', col: 1, row: 1 }
+    - { id: hsv, label: HSV colour check, detail: 'Colour-fraction test over each candidate box. Removing it costs 9 placements (115 -> 106).', col: 1, row: 2, kind: guard }
+    - { id: yolo, label: YOLO11n-seg, detail: 'Fine-tuned on rendered data, exported to ONNX and TensorRT FP16/INT8. 13.2 ms in the loop, 0.81 ms on the clean bench.', col: 2, row: 1 }
+    - { id: depth, label: Depth fusion, detail: 'Mask back-projected into the point cloud. 3.5 ms.', col: 2, row: 2 }
+    - { id: grasp, label: Grasp synthesis, detail: 'PCA over the masked cloud gives centre, jaw yaw and width, with a thickest-slice rule for handles.', col: 3, row: 1 }
+    - { id: ik, label: DLS-IK executor, detail: '5-DOF arm at 10 Hz through a fixed jaw offset. 337.3 ms of simulation compute.', col: 4, row: 1 }
+    - { id: safety, label: Safety monitor, detail: 'Watchdogs, joint and velocity limits, TCP geofence, grounding-confidence gate, latched e-stop. Peaks at 21.8 rad/s against a 1.5 rad/s limit, so the GUI reports clipping rather than applying it.', col: 4, row: 2, kind: guard }
+    - { id: place, label: Placement, detail: '115 of 120 stratified trials placed the requested object.', col: 5, row: 1, kind: output }
+  edges:
+    [[cmd, gdino], [cam, gdino], [gdino, hsv], [hsv, yolo], [cam, depth], [yolo, depth], [depth, grasp], [grasp, ik], [safety, ik], [ik, place]]
+limits:
+  - kind: sim-only
+    text: There is no arm, no RGB-D camera and no Jetson. The stack is built against a MuJoCo model of the SO-ARM100 and every number is measured on an NVIDIA L4 and labelled as such.
+  - kind: failed
+    text: ACT plateaued at 55 of 100 on the fixed-goal task across three attempts (120, 240 and 700 demonstrations), diagnosed as a 1 to 3 cm lateral offset the fixed-jaw executor cannot absorb.
+  - kind: failed
+    text: PPO with the full domain-randomisation set never learned the lift inside the compute budget (0% after 5.6 M steps). A warm-start curriculum rescued training but bought no robustness.
+  - kind: sim-only
+    text: The transfer study is sim to sim - nominal against a deliberately shifted simulator. It is never called sim to real.
+  - kind: not-measured
+    text: TensorRT engines are built for one GPU and would have to be rebuilt on a Jetson. No Jetson latency is claimed.
+links:
+  demo: https://huggingface.co/spaces/pavanyadava07/langgrasp
+  code: https://github.com/pavanyadava007/langgrasp
+  results: https://github.com/pavanyadava007/langgrasp/blob/master/docs/RESULTS.md
+  hazard: https://github.com/pavanyadava007/langgrasp/blob/master/docs/FMEA.md
+---
+
+## Problem & constraints
+
+A language-guided pick is only interesting if you can say *why* it picked that object, and only
+trustworthy if something independent can stop it. The constraint set was deliberately hostile:
+no robot, no depth camera, no Jetson, and a single shared NVIDIA L4. So the target was not a
+demo video - it was a stack where every stage is inspectable, every number has hardware beside
+it, and the safety argument is written as a hazard analysis before the code.
+
+That forced three decisions. Grounding runs **once** per command rather than per frame, because
+at ~297 ms it is the whole latency budget. Segmentation is a small fine-tuned model exported to
+TensorRT rather than a foundation segmenter, because it has to stay under the 10 Hz control tick.
+And the safety monitor is a separate process-level gate with a latched e-stop, not an `if`
+statement inside the controller.
+
+## Results
+
+The headline is **115 of 120** stratified trials placing the requested object, split evenly across
+seen objects, unseen objects and rephrased commands. Grounding itself was correct on 115 of 119
+commands, so almost every end-to-end failure is a grounding failure rather than a control failure -
+which is the useful thing to know, because grounding is the part that is swappable.
+
+## Ablations
+
+Two components each carry 9 placements. Removing the HSV colour check drops the pipeline from
+115/120 to **106/120**; removing the YOLO mask costs the same. They fail on different things,
+though: without the mask, screwdrivers fall from 39/41 to 30/41, because a box around a
+screwdriver contains mostly table, and PCA over a box is not a grasp.
+
+The most useful result came out of the interface rather than the benchmark. Plotting the
+executor's commanded joint velocities against the safety monitor's 1.5 rad/s limit shows the
+executor peaking at **21.8 rad/s**. Enforcing the limit takes the pipeline from 120/120 to
+73/120 on that task - so the limit is real, the executor is wrong, and the honest thing to ship
+was a GUI that reports the clipping instead of a monitor quietly configured not to fire.

@@ -1,0 +1,299 @@
+{
+  "source": "data/legacy-index.html",
+  "scrapedAt": "2026-09-23",
+  "title": "Pavan Yadava Annappa - ML Engineer, 3D Perception & Edge Deployment",
+  "sections": [
+    {
+      "id": "langgrasp",
+      "kicker": "Project 01 · language-guided manipulation",
+      "heading": "LangGrasp",
+      "metrics": [
+        {
+          "value": "115/120 placed",
+          "label": "full language pipeline, 120 stratified trials [91-98% Wilson]: seen 39/40, unseen 39/40, language variation 37/40; grounding correct 115/119"
+        },
+        {
+          "value": "682 ms per command",
+          "label": "median end to end on an NVIDIA L4: grounding 275 ms, segmentation 13 ms, depth fusion 3.5 ms; YOLO11n-seg 0.81 ms in TensorRT FP16 against 7.0 ms in PyTorch"
+        },
+        {
+          "value": "-9 placements",
+          "label": "what removing the HSV colour check costs (106/120); removing the YOLO mask costs the same, and screwdrivers fall from 39/41 to 30/41"
+        },
+        {
+          "value": "120/120 vs 73/120",
+          "label": "found by the interface: enforcing the safety monitor's 1.5 rad/s limit breaks the executor, which peaks at 21.8 rad/s, so the GUI reports clipping instead of applying it"
+        }
+      ],
+      "note": "Simulation, and the negative results are in the open. There is no arm, no RGB-D camera and no Jetson: the stack is built against a MuJoCo model of the SO-ARM100 and every number is measured on an L4 and labelled as such. ACT plateaued at 55 of 100 on the fixed-goal task across three attempts (120, 240 and 700 demonstrations), diagnosed as a 1 to 3 cm lateral offset the fixed-jaw executor cannot absorb. PPO with the full domain-randomisation set never learned the lift inside the compute budget (0% after 5.6 M steps); a warm-start curriculum rescued training but bought no robustness. The transfer study is sim to sim, nominal against a deliberately shifted simulator, and is never called sim to real. TensorRT engines are built for one GPU and would have to be rebuilt on a Jetson.",
+      "links": [
+        {
+          "href": "https://huggingface.co/spaces/pavanyadava07/langgrasp",
+          "text": "Try the live interface"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/langgrasp",
+          "text": "Code & full results"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/langgrasp/blob/master/docs/RESULTS.md",
+          "text": "Every measured number"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/langgrasp/blob/master/docs/FMEA.md",
+          "text": "Hazard analysis"
+        }
+      ]
+    },
+    {
+      "id": "offroad",
+      "kicker": "Project 02 · perception",
+      "heading": "offroad-bevfusion",
+      "metrics": [
+        {
+          "value": "36.4 → 15.2 / 14.7 ms",
+          "label": "PyTorch FP32 → TensorRT FP16 / INT8, batch 1, measured on NVIDIA L4"
+        },
+        {
+          "value": "11.5 ms/frame",
+          "label": "ROS 2 Humble C++ node on the FP16 engine (L4), rviz2 replay"
+        },
+        {
+          "value": "mAP 0.022 → 0.053",
+          "label": "camera-only → cam+LiDAR+radar ablation (nuScenes-mini, 12 epochs); seg mIoU 0.214 → 0.302"
+        },
+        {
+          "value": "IoU 0.021 → 0.348",
+          "label": "GOOSE off-road drivable-area, zero-shot → fine-tuned (LiDAR-driven, release ships no calibration)"
+        }
+      ],
+      "note": "Honest limits. Trained on nuScenes-mini, so absolute mAP is low by design - the ablation deltas are the result, not the scores. Rain and night rows are empty because both mini_val scenes are clear-day. Jetson Orin latency is unmeasured (no hardware). INT8 agreement thresholds were not met, so FP16 is the recommended build. The VLA safety result rests on n=2 real hazard frames, which is why the deterministic override is mandatory rather than optional.",
+      "links": [
+        {
+          "href": "https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion",
+          "text": "Interactive demo (HF Space)"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/offroad-bevfusion",
+          "text": "Code & full report"
+        }
+      ]
+    },
+    {
+      "id": "aeroedge",
+      "kicker": "Project 03 · edge MLOps",
+      "heading": "AeroEdge",
+      "metrics": [
+        {
+          "value": "10.61 → 3.17 MB",
+          "label": "FP32 → INT8 QDQ ONNX (3.3x), mAP@0.5 0.569 → 0.523 on the deployed runtime path"
+        },
+        {
+          "value": "90.6 s / 4.7 s",
+          "label": "canary 5% → 50% → 100% across 20 live agents, 0 failures; abort → all devices reverted"
+        },
+        {
+          "value": "p95 29.6 ms · 34 FPS",
+          "label": "INT8 @640, ORT 8 threads on x86 EPYC 7R13, 5-min soak, RSS 184 MB"
+        },
+        {
+          "value": "-20% RSS",
+          "label": "Rust runtime vs Python on the same .so and model (134.8 vs 168.7 MB); 109 ms cold start"
+        }
+      ],
+      "note": "What did not work, kept in the write-up. INT8 measured ~3 ms slower than FP32 on this EPYC CPU (QDQ overhead), so the INT8 win here is size only. The strict -1 pp accuracy gate fails for INT8 and the release requires an explicit override - the gate is doing its job. Quantizing the head's final Concat silently produced mAP 0.000 (box coords and probabilities share one uint8 scale). QAT was blocked by torch 2.6 removing prepare_qat_fx; structured pruning found 0 prunable groups on YOLO11; distillation gave no gain (0.6835 vs 0.6878) and was not shipped. Jetson, Pi 5 and Coral rows stay unmeasured - no such hardware.",
+      "links": [
+        {
+          "href": "https://huggingface.co/spaces/pavanyadava07/aeroedge",
+          "text": "In-browser demo (HF Space)"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/aeroedge",
+          "text": "Code & results"
+        },
+        {
+          "href": "https://huggingface.co/pavanyadava07/aeroedge-yolo11n",
+          "text": "Model card (HF)"
+        }
+      ]
+    },
+    {
+      "id": "mrs",
+      "kicker": "Project 04 · applied CV + RAG",
+      "heading": "Makerspace Reuse Scanner",
+      "metrics": [
+        {
+          "value": "20/20 · 3/3 · 2/2",
+          "label": "RAG eval, 25 hand-verified questions: expected doc cited, out-of-corpus declined, inventory questions grounded"
+        },
+        {
+          "value": "2.44 s median",
+          "label": "per question, warm llama3.1:8b, k=4, answered in the question's language"
+        },
+        {
+          "value": "mAP50 0.410",
+          "label": "detector on the held-out test split, 9 classes, public data only (v0-public)"
+        },
+        {
+          "value": "Vector-only → hybrid",
+          "label": "vector-only retrieval missed rare literals (Kamin, PVC) and the model invented a hazard claim; hybrid fixed it"
+        }
+      ],
+      "note": "Honest limits. The detector is trained on public data only: screw (0.995) and pcb (0.994) are studio single-object shots and inflated, battery (0.030) and tool (0.049) have too little data to be usable, and 6 of 15 planned classes have no data at all. The dominant error is missed detection, not confusion. No Raspberry Pi 5 benchmark - no device. Refusal scoring is a regex heuristic, so the report ships every answer verbatim for manual review.",
+      "links": [
+        {
+          "href": "https://huggingface.co/spaces/pavanyadava07/makerspace-reuse-scanner",
+          "text": "Browser demo (HF Space)"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/makerspace-reuse-scanner",
+          "text": "Code & reports"
+        },
+        {
+          "href": "https://huggingface.co/pavanyadava07/makerspace-yolo11n",
+          "text": "Model card (HF)"
+        }
+      ]
+    },
+    {
+      "id": "sigint",
+      "kicker": "Project 05 · distributed ML platform",
+      "heading": "SIGINT-Fusion",
+      "metrics": [
+        {
+          "value": "75.7% top-1",
+          "label": "21 modulations, real RadioML 2018.01A, SNR -10 to 30 dB (96% at 30 dB, 94% at 10 dB)"
+        },
+        {
+          "value": "87.6% ± 4.3",
+          "label": "5-shot on 3 modulations never seen in training, 50 episodes, chance 33%"
+        },
+        {
+          "value": "hit@5 100% · MRR 0.93",
+          "label": "hybrid dense + full-text retrieval over 53 questions; analyst agent 10/10 tasks on qwen2.5:7b"
+        },
+        {
+          "value": "1.48 ms model · 251 req/s",
+          "label": "classify service, CPU ONNX Runtime, 32 concurrent, n=2000 (end-to-end p50 110 ms)"
+        }
+      ],
+      "note": "The headline result is a negative one. Pretraining on my synthetic channel model did not transfer to real frames: against from-scratch training it scored -0.4 pp at full data and -4.1 pp at 10%, and frozen synthetic features reached only ~71% against ~87%. The synthetic generator is a pipeline stand-in, not a substitute for licensed data, and every table labels which one produced it. BYOL also lost ground (-2.7 pp at 10% data), and a ViT-tiny on STFT spectrograms was far worse than the ResNet-1D (48.6% against 75.7%). Specific emitter ID and pulse deinterleaving run on synthetic fingerprints, so their near-perfect scores measure the pipeline, not the physics. The one real 2016.10a slice available is a single-SNR mirror whose test frames may overlap the pretraining split, so it is reported as indicative only.",
+      "links": [
+        {
+          "href": "https://github.com/pavanyadava007/sigint-fusion",
+          "text": "Code & full results"
+        },
+        {
+          "href": "https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md",
+          "text": "Run log & per-SNR curves"
+        }
+      ]
+    },
+    {
+      "id": "nxp",
+      "kicker": "Project 06 · agents for hardware",
+      "heading": "AI-Driven Hardware Validation & Reporting Agent",
+      "metrics": [
+        {
+          "value": "F1 0.531 → 0.900",
+          "label": "spec-limit screen → supervised RF on a DUT-grouped hold-out (ROC-AUC 0.963)"
+        },
+        {
+          "value": "14 escapes · 3 overkills",
+          "label": "real defects that passed every spec limit, and healthy parts the limit screen wrongly failed"
+        },
+        {
+          "value": "92,160 measurements",
+          "label": "240 runs, 40 injected faults, anomaly detection + report generation"
+        },
+        {
+          "value": "6.1k LOC · 97 tests",
+          "label": "ruff-clean, typed, CI on SQLite and live PostgreSQL"
+        }
+      ],
+      "note": "Reported, not hidden: the rank-fused ensemble (0.816) is worse than the supervised model alone (0.900) - rank averaging drags a strong learner toward two weaker ones. Fusion is kept only as the cold-start path for a new product with no failure-analysis labels. 240 runs is also a small campaign, so the confidence intervals are wide.",
+      "links": [
+        {
+          "href": "https://github.com/pavanyadava007/nxp-hw-validation-agent",
+          "text": "Code & report"
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "kicker": "More work",
+      "heading": "Also on the bench",
+      "metrics": [],
+      "note": "",
+      "links": []
+    },
+    {
+      "id": "experience",
+      "kicker": "Experience",
+      "heading": "Where I've worked",
+      "metrics": [],
+      "note": "",
+      "links": []
+    },
+    {
+      "id": "skills",
+      "kicker": "Skills",
+      "heading": "What I work with",
+      "metrics": [],
+      "note": "",
+      "links": []
+    }
+  ],
+  "paretoRows": [
+    [
+      "FP32 @640",
+      "26.3 ms",
+      "0.569",
+      "10.61 MB"
+    ],
+    [
+      "INT8 @640 (shipped)",
+      "29.6 ms",
+      "0.523",
+      "3.17 MB"
+    ],
+    [
+      "FP32 @416",
+      "12.8 ms",
+      "0.440",
+      "10.51 MB"
+    ],
+    [
+      "INT8 @416",
+      "13.1 ms",
+      "0.396",
+      "3.07 MB"
+    ]
+  ],
+  "metricValues": [
+    "-20% RSS",
+    "-9 placements",
+    "1.48 ms model · 251 req/s",
+    "10.61 → 3.17 MB",
+    "11.5 ms/frame",
+    "115/120 placed",
+    "120/120 vs 73/120",
+    "14 escapes · 3 overkills",
+    "2.44 s median",
+    "20/20 · 3/3 · 2/2",
+    "36.4 → 15.2 / 14.7 ms",
+    "6.1k LOC · 97 tests",
+    "682 ms per command",
+    "75.7% top-1",
+    "87.6% ± 4.3",
+    "90.6 s / 4.7 s",
+    "92,160 measurements",
+    "F1 0.531 → 0.900",
+    "IoU 0.021 → 0.348",
+    "Vector-only → hybrid",
+    "hit@5 100% · MRR 0.93",
+    "mAP 0.022 → 0.053",
+    "mAP50 0.410",
+    "p95 29.6 ms · 34 FPS"
+  ]
+}

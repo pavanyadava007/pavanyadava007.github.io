@@ -1,0 +1,153 @@
+---
+import { site } from '~/lib/site';
+import ThemeToggle from './ThemeToggle.astro';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+---
+
+<header class="nav" data-nav>
+  <div class="nav__progress" data-progress aria-hidden="true"></div>
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="/">
+      <span class="nav__mark" aria-hidden="true"></span>
+      <span>{site.name}</span>
+    </a>
+
+    <nav aria-label="Primary">
+      <ul class="nav__list">
+        {
+          site.nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="nav__end">
+      <button class="nav__cmd" type="button" data-open-palette aria-label="Open the command palette">
+        <span class="mono" aria-hidden="true">⌘K</span>
+      </button>
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav__progress {
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: -1px;
+    height: 2px;
+    width: 0;
+    background: var(--accent);
+    transition: width 90ms linear;
+  }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.5rem;
+  }
+  .nav__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 600;
+    font-size: var(--t-sm);
+    text-decoration: none;
+    margin-inline-end: auto;
+    white-space: nowrap;
+  }
+  .nav__mark {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1.5px solid var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .nav__list {
+    display: flex;
+    gap: clamp(0.75rem, 2.5vw, 1.5rem);
+    list-style: none;
+    padding: 0;
+    font-size: var(--t-sm);
+  }
+  .nav__list a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    padding-block: 0.35rem;
+    transition: color 200ms var(--ease);
+  }
+  .nav__list a:hover {
+    color: var(--fg);
+  }
+  .nav__list a[aria-current='page'] {
+    color: var(--accent);
+  }
+  .nav__end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .nav__cmd {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg-dim);
+    padding: 0.28rem 0.5rem;
+    font-size: var(--t-xs);
+    cursor: pointer;
+    transition:
+      border-color 200ms var(--ease),
+      color 200ms var(--ease);
+  }
+  .nav__cmd:hover {
+    border-color: var(--accent);
+    color: var(--fg);
+  }
+  @media (max-width: 560px) {
+    .nav__brand span:last-child {
+      display: none;
+    }
+    .nav__cmd {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  function wireProgress() {
+    const bar = document.querySelector<HTMLElement>('[data-progress]');
+    if (!bar) return;
+    let ticking = false;
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = max > 0 ? `${Math.min(100, (window.scrollY / max) * 100)}%` : '0%';
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  }
+  wireProgress();
+  document.addEventListener('astro:page-load', wireProgress);
+</script>

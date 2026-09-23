@@ -1,0 +1,69 @@
+[
+  {
+    "id": "aumovio",
+    "order": 1,
+    "kind": "work",
+    "role": "AI / ML Engineer and Researcher, Automotive Perception",
+    "org": "AUMOVIO SE (Continental AG automotive spin-off)",
+    "location": "Frankfurt, Germany",
+    "start": "Oct 2025",
+    "end": null,
+    "bullets": [
+      "SparseDrive end-to-end model research: vulnerable-road-user detection and point-cloud pre-processing in C++/Python.",
+      "MLOps evaluation tooling reporting mAP and precision-recall per test scenario.",
+      "Radar test automation."
+    ]
+  },
+  {
+    "id": "continental-alzenau",
+    "order": 2,
+    "kind": "work",
+    "role": "AI & Data Science Intern, Automotive Division",
+    "org": "Continental AG",
+    "location": "Alzenau, Germany",
+    "start": "Apr 2024",
+    "end": "Oct 2025",
+    "bullets": [
+      "ADAS validation workflows with deep learning, sensor fusion and image/video processing.",
+      "Real-time visualisation tooling.",
+      "Docker-containerised deployment."
+    ]
+  },
+  {
+    "id": "continental-bengaluru",
+    "order": 3,
+    "kind": "work",
+    "role": "Engineer, ADAS Software Algorithm Development",
+    "org": "Continental AG",
+    "location": "Bengaluru, India",
+    "start": "Jun 2022",
+    "end": "Sep 2024",
+    "bullets": [
+      "CV and Transformer models for series Traffic Sign Recognition.",
+      "Landmark detection, automatic camera calibration and ODD testing.",
+      "KPI-evaluation pipelines saving 30+ hours/week, under ISO 26262 (ASIL-B) and MISRA C++."
+    ]
+  },
+  {
+    "id": "fau",
+    "order": 4,
+    "kind": "education",
+    "role": "M.Sc. Artificial Intelligence in Autonomous Driving & Electromobility",
+    "org": "Friedrich-Alexander-Universität Erlangen-Nürnberg",
+    "location": "Erlangen-Nürnberg, Germany",
+    "start": "Oct 2024",
+    "end": null,
+    "bullets": []
+  },
+  {
+    "id": "nie",
+    "order": 5,
+    "kind": "education",
+    "role": "B.E. Electronics and Communication Engineering",
+    "org": "The National Institute of Engineering",
+    "location": "Mysuru, India",
+    "start": "2021",
+    "end": "2021",
+    "bullets": []
+  }
+]

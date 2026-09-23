@@ -1,0 +1,103 @@
+---
+title: SIGINT-Fusion
+order: 5
+kicker: Project 05 · distributed ML platform
+claim: Simulated RF sensors stream I/Q through a Java ingest gateway and Kafka into an ONNX modulation classifier, an emitter fuser and a RAG analyst agent.
+description: Nine containerised services - Spring Boot ingest, Kafka, ONNX classification, classical DSP, Kalman/Hungarian fusion and a LangGraph analyst over MCP.
+status: new
+featured: true
+categories: [signals, llm-rag, edge-mlops]
+stack: [Spring Boot 3, Java 21, Kafka, ONNX Runtime, ResNet-1D, LangGraph, MCP, Postgres/pgvector, React, Docker]
+poster: sigint-overview.png
+tldr: Nine containerised services with health checks - a validated Spring Boot 3 / Java 21 ingest gateway, Kafka transport, a Python consumer running ONNX classification plus classical DSP, a Kalman + Hungarian fuser building the electronic order of battle, a pgvector hybrid-retrieval corpus and a LangGraph analyst agent with 8 tools over MCP. The classifier is a ResNet-1D on real DeepSig RadioML 2018.01A. The headline result is a negative one - synthetic pretraining did not transfer to real frames.
+metrics:
+  - value: 75.7% top-1
+    label: 21 modulations, SNR -10 to 30 dB
+    dataset: real DeepSig RadioML 2018.01A, 1024 samples
+    n: 96% at 30 dB, 94% at 10 dB
+    source: https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md
+  - value: 87.6% ± 4.3
+    label: 5-shot on 3 modulations never seen in training
+    n: 50 episodes, chance 33%
+    dataset: 32APSK, 128QAM, OQPSK
+    source: https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md
+  - value: hit@5 100% · MRR 0.93
+    label: hybrid dense + full-text retrieval
+    n: 53 questions, 37 chunks; analyst agent 10/10 tasks on qwen2.5:7b
+    source: https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md
+  - value: 1.48 ms model · 251 req/s
+    label: classify service, CPU ONNX Runtime
+    hardware: docker python:3.12-slim, 2 uvicorn workers, host 32 vCPU
+    n: 32 concurrent, n=2000, end-to-end p50 110 ms
+    source: https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md
+arch:
+  title: Sensor to analyst
+  caption: The Java gateway validates before anything reaches Kafka, so a malformed capture never reaches the model. Hover a node for what it measured.
+  nodes:
+    - { id: sensors, label: RF sensors, detail: '7-emitter scenario observed by 3 COMINT sensors streaming RadioML frames and 1 R-ESM sensor.', col: 0, row: 1, kind: input }
+    - { id: gw, label: Spring Boot 3 gateway, detail: 'Java 21, validated ingest. Rejects malformed captures before Kafka.', col: 1, row: 1, kind: guard }
+    - { id: kafka, label: Kafka, detail: 'Transport between ingest and the Python consumer.', col: 2, row: 1 }
+    - { id: clf, label: ResNet-1D classifier, detail: '21 modulations, ONNX Runtime on CPU. 75.7% top-1; model-only p50 1.48 ms, 251 req/s at 32 concurrent.', col: 3, row: 0 }
+    - { id: dsp, label: Classical DSP, detail: 'Welch PSD, STFT, vectorised CA-CFAR, DBSCAN pulse deinterleaving (purity 1.00 / completeness 1.00 on synthetic PDWs).', col: 3, row: 2 }
+    - { id: fuse, label: Kalman + Hungarian, detail: 'Builds the electronic order of battle in Postgres from track-to-detection assignments.', col: 4, row: 1 }
+    - { id: kb, label: pgvector corpus, detail: 'Hybrid dense + full-text retrieval. hit@5 100%, MRR 0.93 over 53 questions; dense-only hit@5 98.1%.', col: 5, row: 2 }
+    - { id: agent, label: LangGraph analyst, detail: '8 tools exposed over MCP on qwen2.5:7b. 10/10 tasks, answers grounded in retrieved catalogue entries, writes reports.', col: 5, row: 1 }
+    - { id: console, label: Operator console, detail: 'React: spectrum waterfall, EOB bearing rose, live detections.', col: 6, row: 1, kind: output }
+  edges:
+    [[sensors, gw], [gw, kafka], [kafka, clf], [kafka, dsp], [clf, fuse], [dsp, fuse], [fuse, agent], [kb, agent], [agent, console], [fuse, console]]
+limits:
+  - kind: failed
+    text: Pretraining on the synthetic channel model did not transfer to real frames - against from-scratch training it scored -0.4 pp at full data and -4.1 pp at 10%, and frozen synthetic features reached only ~71% against ~87%.
+  - kind: failed
+    text: BYOL also lost ground (-2.7 pp at 10% data), and a ViT-tiny on STFT spectrograms was far worse than the ResNet-1D (48.6% against 75.7%).
+  - kind: other
+    text: The synthetic generator is a pipeline stand-in, not a substitute for licensed data. Every table labels which one produced it.
+  - kind: sim-only
+    text: Specific emitter ID and pulse deinterleaving run on synthetic fingerprints, so their near-perfect scores measure the pipeline, not the physics.
+  - kind: small-n
+    text: The one real 2016.10a slice available is a single-SNR mirror whose test frames may overlap the pretraining split, so it is reported as indicative only.
+links:
+  code: https://github.com/pavanyadava007/sigint-fusion
+  results: https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md
+---
+
+## Problem & constraints
+
+Modulation classification is a solved-looking problem with an unsolved data problem: the good
+datasets are licensed, and the tempting shortcut is to generate your own I/Q and pretrain on it.
+This project was built to run that shortcut properly and report what it actually bought.
+
+The platform constraints were separate from the model question. Nine services, health-checked,
+with a **validated Java ingest boundary** in front of the model - because in a signals pipeline
+the malformed capture is not an edge case, and a Python consumer should never be the first thing
+to see one.
+
+## Results
+
+On real DeepSig RadioML 2018.01A the ResNet-1D reaches **75.7% top-1** across 21 modulations over
+an SNR range of -10 to 30 dB, rising to 94% at 10 dB and 96% at 30 dB. Five-shot transfer to
+three modulations never seen in training reaches **87.6% ± 4.3** over 50 episodes against a 33%
+chance baseline.
+
+The serving path holds up: **1.48 ms** model-only p50 and **251 req/s** at 32 concurrent requests
+on CPU ONNX Runtime, with an end-to-end p50 of 110 ms across the full HTTP path. Retrieval reaches
+**hit@5 100% and MRR 0.93** over 53 questions with hybrid dense + full-text, against 98.1%
+dense-only, and the LangGraph analyst completed 10/10 tasks on a local qwen2.5:7b.
+
+## Ablations
+
+**The headline result is a negative one, and it is the point of the project.**
+
+Pretraining on my own synthetic channel model and fine-tuning on real frames scored **-0.4 pp**
+against training from scratch at full data, and **-4.1 pp** at 10% data. Frozen synthetic features
+reached only ~71% where real-trained features reached ~87%. A synthetic generator that matches the
+class list and the file layout of a real dataset produces a working *pipeline* and a
+non-transferring *representation*, and those two things are easy to confuse if you only ever run
+the pipeline.
+
+Two more routes were tried and lost. BYOL self-supervision came in at **-2.7 pp** at 10% data. A
+ViT-tiny over STFT spectrograms reached **48.6%** against the ResNet-1D's 75.7% on the same split -
+treating I/Q as an image throws away the phase structure the 1D model uses directly.
+
+Every table in the repo is written by a script into a results JSON carrying dataset path, a
+synthetic flag, GPU, seed and git commit, and rendered from there. Nothing in them is typed by hand.

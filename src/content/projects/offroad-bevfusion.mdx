@@ -1,0 +1,115 @@
+---
+title: offroad-bevfusion
+order: 2
+kicker: Project 02 · perception
+claim: Camera + LiDAR + radar multitask BEV perception, exported to TensorRT and deployed as a ROS 2 C++ node.
+description: Six-camera LSS, LiDAR and radar pillars fused into a shared BEV by deformable attention, with off-road transfer and a VLA safety interface.
+status: live
+featured: true
+categories: [perception, edge-mlops]
+stack: [PyTorch, LSS, CenterPoint, deformable attention, ONNX opset 17, TensorRT FP16/INT8, ROS 2 Humble, C++, DVC, Qwen2.5-VL]
+poster: poster.jpg
+video: showcase.mp4
+tldr: Six cameras, LiDAR pillars and 5-sweep radar pillars are fused into a shared 200x200 BEV by a deformable-attention encoder feeding 3D detection, BEV segmentation and occupancy heads under a Kendall uncertainty-weighted loss. Exported as static-shape ONNX with no custom TensorRT plugins and deployed as a ROS 2 Humble C++ node at 11.5 ms/frame on an NVIDIA L4. Trained on nuScenes-mini, so the ablation deltas are the result - not the absolute scores.
+metrics:
+  - value: 36.4 → 15.2 / 14.7 ms
+    label: PyTorch FP32 → TensorRT FP16 / INT8
+    hardware: NVIDIA L4, batch 1, 200 iters (30 warm-up)
+    source: https://github.com/pavanyadava007/offroad-bevfusion/blob/main/docs/REPORT.md
+  - value: 11.5 ms/frame
+    label: ROS 2 Humble C++ node on the FP16 engine
+    hardware: NVIDIA L4, rviz2 replay in the ros:humble container
+    source: https://github.com/pavanyadava007/offroad-bevfusion/blob/main/docs/DEPLOYMENT.md
+  - value: mAP 0.022 → 0.053
+    label: camera-only → cam+LiDAR+radar ablation
+    dataset: nuScenes-mini, 12 epochs
+    n: seg mIoU 0.214 → 0.302
+    source: https://github.com/pavanyadava007/offroad-bevfusion/blob/main/docs/REPORT.md
+  - value: IoU 0.021 → 0.348
+    label: GOOSE off-road drivable-area, zero-shot → fine-tuned
+    dataset: GOOSE
+    n: LiDAR-driven; release ships no calibration
+    source: https://github.com/pavanyadava007/offroad-bevfusion/blob/main/docs/REPORT.md
+latency:
+  mode: variants
+  title: What each export path costs
+  hardware: NVIDIA L4, batch 1, 200 iterations after 30 warm-up, mean ms
+  total: 36.4 ms → 14.7 ms across four runtimes
+  caption: Four runtimes of the same graph. INT8 buys only ~0.5 ms over FP16 because most sensitive layers already run in fp16, and its agreement thresholds were not met - so FP16 is the recommended build and INT8 ships as a size experiment only.
+  stages:
+    - { name: PyTorch FP32, ms: 36.4, note: p99 37.2 ms }
+    - { name: PyTorch AMP FP16, ms: 25.0, note: p99 25.9 ms }
+    - { name: TensorRT FP16 (recommended), ms: 15.2, note: p99 15.8 ms }
+    - { name: TensorRT INT8, ms: 14.7, note: p99 15.0 ms - agreement thresholds not met }
+arch:
+  title: Three sensors, one BEV grid, three heads
+  caption: All three modalities are lifted into the same 200x200 BEV frame before fusion, so a dropped sensor degrades the grid rather than breaking the graph. Hover a node for what it contributes.
+  nodes:
+    - { id: cam, label: 6x camera, detail: 'Lift-Splat-Shoot lifts each image into the shared BEV frustum. Camera alone: mAP 0.022, seg mIoU 0.214.', col: 0, row: 0, kind: input }
+    - { id: lidar, label: LiDAR, detail: 'Pillar encoder. Adding LiDAR takes mAP 0.022 -> 0.047 and seg mIoU 0.214 -> 0.283.', col: 0, row: 1, kind: input }
+    - { id: radar, label: Radar (5 sweeps), detail: 'Pillar encoder over 5 accumulated sweeps. Adding radar takes mAP 0.047 -> 0.053. Dropping it at test time collapses mAP to 0.001.', col: 0, row: 2, kind: input }
+    - { id: bev, label: BEV encoder, detail: 'Deformable-attention encoder over a shared 200x200 BEV grid. Removing deformable attention changes mAP to 0.059 and seg mIoU to 0.291.', col: 1, row: 1 }
+    - { id: det, label: 3D detection, detail: 'CenterPoint head. mAP 0.053 / NDS 0.108 on nuScenes-mini val.', col: 2, row: 0, kind: head }
+    - { id: seg, label: BEV segmentation, detail: 'mIoU 0.302 on nuScenes-mini val; 0.348 drivable-area IoU after GOOSE fine-tuning.', col: 2, row: 1, kind: head }
+    - { id: occ, label: 3D occupancy, detail: 'Occupancy mIoU 0.086. All three heads share a Kendall uncertainty-weighted loss.', col: 2, row: 2, kind: head }
+    - { id: onnx, label: Static ONNX (opset 17), detail: 'Static shapes, no custom TensorRT plugins - so the engine builds on a stock TensorRT.', col: 3, row: 1 }
+    - { id: trt, label: TensorRT FP16, detail: '15.2 ms on an NVIDIA L4 against 36.4 ms in PyTorch FP32.', col: 4, row: 1 }
+    - { id: ros, label: ROS 2 Humble C++ node, detail: '11.5 ms/frame end to end in the ros:humble container, replayed in rviz2.', col: 5, row: 1, kind: output }
+    - { id: vla, label: VLA + fail-safe rule, detail: 'Qwen2.5-VL LoRA proposes an action primitive; a deterministic rule escalates APPROACH -> WAIT -> STOP and can always override. Stop recall on the 50-frame eval is 0.000, which is why the override is mandatory.', col: 5, row: 2, kind: guard }
+  edges:
+    [[cam, bev], [lidar, bev], [radar, bev], [bev, det], [bev, seg], [bev, occ], [det, onnx], [seg, onnx], [occ, onnx], [onnx, trt], [trt, ros], [ros, vla]]
+limits:
+  - kind: small-n
+    text: Trained on nuScenes-mini, so absolute mAP is low by design. The ablation deltas are the result, not the scores.
+  - kind: not-measured
+    text: Rain and night rows are empty because both mini_val scenes are clear-day. No adverse-weather number is claimed.
+  - kind: not-measured
+    text: Jetson Orin latency is unmeasured - no hardware. Engines were built and timed on the L4 only.
+  - kind: failed
+    text: INT8 agreement thresholds were not met, so FP16 is the recommended build even though INT8 is 0.5 ms faster.
+  - kind: small-n
+    text: The VLA safety result rests on n=2 real hazard frames, and stop recall on the 50-frame eval is 0.000. That is why the deterministic override is mandatory rather than optional.
+links:
+  demo: https://huggingface.co/spaces/pavanyadava07/offroad-bevfusion
+  code: https://github.com/pavanyadava007/offroad-bevfusion
+  results: https://github.com/pavanyadava007/offroad-bevfusion/blob/main/docs/REPORT.md
+---
+
+## Problem & constraints
+
+Off-highway perception has the same sensor set as automotive and almost none of the data. The
+constraint here was a zero-cost GPU budget: one shared NVIDIA L4, nuScenes-mini for training, and
+GOOSE for the off-road transfer check. Under those constraints absolute accuracy is meaningless,
+so the project was built to measure *deltas* - what each modality adds, what happens when one
+drops out, what the export path costs - and to make the deployment real rather than a notebook.
+
+The export constraint drove the architecture: static-shape ONNX at opset 17 with **no custom
+TensorRT plugins**, so the engine builds on a stock TensorRT install and the ROS 2 node does not
+depend on a patched runtime.
+
+## Results
+
+TensorRT FP16 takes the graph from **36.4 ms to 15.2 ms** on an L4, and the deployed ROS 2 Humble
+C++ node runs the whole frame in **11.5 ms** on that engine. On accuracy, each modality pays for
+itself: camera-only reaches mAP 0.022, adding LiDAR 0.047, adding radar 0.053, with BEV
+segmentation mIoU moving 0.214 → 0.283 → 0.302 over the same steps.
+
+## Ablations
+
+The radar-dropout study is the one that changed my mind about the design. Dropping radar at test
+time - after training with it - takes mAP from **0.053 to 0.008 at 50% dropout and 0.001 at
+100%**. The fused model does not degrade gracefully; it has learned to depend on a sensor it was
+never taught to lose. That is a training-time fix (modality dropout augmentation), not a
+deployment-time one, and it is listed as open work rather than quietly omitted.
+
+Two other ablations cut against the headline and are reported anyway: removing deformable
+attention *raised* mAP to 0.059, and fixed loss weights beat the learned Kendall weighting at
+0.062. On a dataset this small those differences are inside the noise, which is exactly why the
+deltas are reported with the dataset size attached.
+
+On GOOSE, zero-shot drivable-area IoU is **0.021** and fine-tuning takes it to **0.348** - a
+plain statement that a nuScenes-trained BEV head transfers almost nothing to off-road terrain.
+
+{/* TODO(media): the before/after CompareSlider for GOOSE zero-shot vs fine-tuned needs a matched
+    pair of rviz screenshots of the same frame. Only the fine-tuned replay GIF exists today, so the
+    comparison is shown as numbers rather than as an image slider. */}

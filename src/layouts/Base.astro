@@ -1,0 +1,102 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Nav from '~/components/Nav.astro';
+import Footer from '~/components/Footer.astro';
+import CommandPalette from '~/components/CommandPalette.tsx';
+import { resolveSeo, personJsonLd, type SeoInput } from '~/lib/seo';
+import { site } from '~/lib/site';
+import '~/styles/global.css';
+
+interface Props extends SeoInput {
+  /** Extra JSON-LD graphs for this page. */
+  jsonLd?: object[];
+}
+
+const { jsonLd = [], ...seoInput } = Astro.props;
+const seo = resolveSeo({ ...seoInput, path: Astro.url.pathname });
+const graphs = [personJsonLd(), ...jsonLd];
+
+const palette = await import('~/lib/palette').then((m) => m.buildPaletteItems());
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{seo.title}</title>
+    <meta name="description" content={seo.description} />
+    <link rel="canonical" href={seo.canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={seo.type} />
+    <meta property="og:title" content={seo.title} />
+    <meta property="og:description" content={seo.description} />
+    <meta property="og:url" content={seo.canonical} />
+    <meta property="og:image" content={seo.image} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={seo.title} />
+    <meta name="twitter:description" content={seo.description} />
+    <meta name="twitter:image" content={seo.image} />
+
+    <meta name="author" content={site.name} />
+    <meta name="theme-color" content="#0a0b0d" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    {/* Self-hosted, committed in public/fonts (see scripts/fetch-fonts.ts). Only the two
+        above-the-fold families are preloaded; mono arrives with the stylesheet. */}
+    <link
+      rel="preload"
+      href="/fonts/inter-tight-400-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/fraunces-400-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    {
+      graphs.map((g) => (
+        <script type="application/ld+json" set:html={JSON.stringify(g)} is:inline />
+      ))
+    }
+
+    <ClientRouter />
+
+    {/* Applied before first paint so there is no flash of the wrong theme. */}
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.dataset.theme = stored;
+            return;
+          }
+        } catch (e) {
+          /* storage blocked - fall through to the media query */
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Nav />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <CommandPalette client:idle items={palette} />
+  </body>
+</html>

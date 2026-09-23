@@ -1,0 +1,101 @@
+[
+  {
+    "id": "perception",
+    "order": 1,
+    "group": "Perception & Signals",
+    "items": [
+      "BEV perception (LSS, deformable attention)",
+      "3D detection (CenterPoint, PointPillars)",
+      "Semantic segmentation",
+      "Occupancy prediction",
+      "Multitask learning",
+      "LiDAR-camera-radar fusion",
+      "End-to-end autonomy",
+      "2D detection (YOLO11)",
+      "Domain-shift evaluation",
+      "RF modulation classification",
+      "Classical DSP (PSD, STFT, CFAR)",
+      "Kalman/Hungarian multi-target fusion",
+      "Few-shot and self-supervised (BYOL) transfer"
+    ]
+  },
+  {
+    "id": "deployment",
+    "order": 2,
+    "group": "Deployment & Compression",
+    "items": [
+      "TensorRT (FP16 / INT8 PTQ)",
+      "Static-shape ONNX export and parity testing",
+      "ONNX Runtime (Python, Rust, WebAssembly)",
+      "ROS 2 Humble C++ nodes",
+      "Quantization / pruning / distillation",
+      "Latency and memory benchmarking",
+      "Docker"
+    ]
+  },
+  {
+    "id": "mlops",
+    "order": 3,
+    "group": "MLOps & Systems",
+    "items": [
+      "DVC pipelines",
+      "MLflow",
+      "Weights & Biases",
+      "GitHub Actions CI",
+      "pytest",
+      "ruff",
+      "Signed OTA bundles",
+      "MQTT canary rollout with automatic rollback",
+      "Kafka",
+      "Spring Boot / Java 21",
+      "FastAPI",
+      "Postgres/pgvector",
+      "React",
+      "Docker Compose",
+      "Distributed GPU training (Slurm, FSDP)"
+    ]
+  },
+  {
+    "id": "llm",
+    "order": 4,
+    "group": "LLM / VLM",
+    "items": [
+      "Qwen2.5-VL LoRA fine-tuning",
+      "Vision-language action grounding with deterministic safety overrides",
+      "On-premise RAG (Ollama, hybrid dense + lexical retrieval, citation and refusal evaluation)",
+      "Agentic tool use over MCP",
+      "vLLM serving"
+    ]
+  },
+  {
+    "id": "safety",
+    "order": 5,
+    "group": "Safety & Process",
+    "items": [
+      "ISO 26262 (ASIL-B)",
+      "ISO 21448 (SOTIF)",
+      "MISRA C++",
+      "Hazard analysis and release gates",
+      "Automated KPI pipelines",
+      "Simulation-based validation",
+      "HIL tooling"
+    ]
+  },
+  {
+    "id": "languages",
+    "order": 6,
+    "group": "Languages",
+    "items": [
+      "Python",
+      "C++",
+      "Rust",
+      "C",
+      "SQL",
+      "TypeScript",
+      "English (C1)",
+      "German (B2)",
+      "Kannada",
+      "Hindi"
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+---
+title: embedded-codegen-lm
+order: 8
+kicker: On the bench · LLM training
+claim: A code-generation LM specialised for safety-critical embedded C, scored by target compile rate and MISRA-C cleanliness rather than by "does it run".
+description: Data curation, distributed LoRA/FSDP fine-tuning, a fused RMSNorm Triton kernel, vLLM serving, and a compile-and-MISRA evaluation harness.
+status: pipeline-only
+featured: false
+lab: true
+categories: [llm-rag, hardware]
+stack: [PyTorch, FSDP, LoRA, Triton, vLLM, AWQ INT4, MISRA C]
+limits:
+  - kind: not-measured
+    text: The pipeline is complete but no benchmark run is published yet, so no accuracy, compile-rate or throughput number is claimed.
+links:
+  code: https://github.com/pavanyadava007/embedded-codegen-lm
+---
+
+A code-generation LM specialised for safety-critical embedded C: data curation, distributed
+LoRA/FSDP fine-tuning, a custom fused RMSNorm Triton kernel, vLLM serving (bf16 / AWQ INT4), and
+an evaluation harness that scores generations by target compile rate, MISRA-C cleanliness and unit
+tests rather than by "does it run". Pipeline is complete; no benchmark run is published yet.

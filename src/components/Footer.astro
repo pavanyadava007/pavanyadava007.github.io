@@ -1,0 +1,73 @@
+---
+import { site } from '~/lib/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot__avail">
+      <span class="foot__dot" aria-hidden="true"></span>
+      {site.location} · {site.availability}
+    </p>
+    <ul class="foot__links">
+      <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+      <li><a href={site.social.github} rel="me noopener">GitHub</a></li>
+      <li><a href={site.social.linkedin} rel="me noopener">LinkedIn</a></li>
+      <li><a href={site.social.huggingface} rel="me noopener">Hugging Face</a></li>
+      <li><a href={site.cv}>CV (PDF)</a></li>
+    </ul>
+    <p class="foot__note">{site.footerNote}</p>
+    <p class="foot__meta mono">© {year} {site.name}</p>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    border-top: 1px solid var(--line);
+    padding-block: 3.5rem 4.5rem;
+    margin-top: 5rem;
+    background: var(--bg-sunk);
+  }
+  .foot__avail {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: var(--t-sm);
+    color: var(--fg);
+  }
+  .foot__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent);
+  }
+  .foot__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+    font-size: var(--t-sm);
+  }
+  .foot__links a {
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .foot__links a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .foot__note {
+    margin-top: 1.75rem;
+    max-width: 68ch;
+    color: var(--fg-dim);
+    font-size: var(--t-sm);
+  }
+  .foot__meta {
+    margin-top: 1.5rem;
+    color: var(--fg-dim);
+    font-size: var(--t-xs);
+  }
+</style>
