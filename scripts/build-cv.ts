@@ -62,7 +62,9 @@ projects.sort((a, b) => a.order - b.order);
 
 const featured = projects.filter((p) => p.featured);
 const work = experience.filter((e) => e.kind === 'work').sort((a, b) => a.order - b.order);
-const education = experience.filter((e) => e.kind === 'education').sort((a, b) => a.order - b.order);
+const education = experience
+  .filter((e) => e.kind === 'education')
+  .sort((a, b) => a.order - b.order);
 
 const range = (e: Experience) =>
   e.end === null ? `${e.start} - present` : e.start === e.end ? e.start : `${e.start} - ${e.end}`;
@@ -212,6 +214,24 @@ await page.setContent(
 );
 await page.evaluate(() => document.fonts.ready);
 
+/** A4 content box at 96 dpi, less the 13 mm top and bottom margins. */
+const PAGE_CONTENT_PX = (297 - 26) * (96 / 25.4);
+const layout = await page.evaluate(() => ({
+  height: document.body.scrollHeight,
+  sections: [...document.querySelectorAll('h2')].map((h) => h.textContent!.trim()),
+  entries: document.querySelectorAll('.entry').length,
+  projects: document.querySelectorAll('.proj').length,
+  metrics: document.querySelectorAll('.metrics b').length,
+  overflowing: [...document.querySelectorAll('*')].some(
+    (el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow === 'visible',
+  ),
+}));
+const pageCount = Math.ceil(layout.height / PAGE_CONTENT_PX);
+console.log(
+  `layout: ${layout.sections.join(' / ')} | ${layout.projects} projects, ` +
+    `${layout.entries} entries, ${layout.metrics} metrics`,
+);
+
 const pdf = await page.pdf({ format: 'A4', printBackground: true });
 await writeFile(resolve(ROOT, 'public/cv.pdf'), pdf);
 
@@ -227,5 +247,5 @@ await browser.close();
 
 console.log(
   `cv.pdf: ${(pdf.length / 1024).toFixed(0)} kB, ${featured.length} projects, ` +
-    `${work.length} roles, ${education.length} education entries`,
+    `${work.length} roles, ${education.length} education entries, ${pageCount} A4 pages`,
 );

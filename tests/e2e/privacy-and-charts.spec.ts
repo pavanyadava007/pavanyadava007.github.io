@@ -34,9 +34,11 @@ test('every chart ships a table of its own values', async ({ page }) => {
 
 test('the Pareto front is computed, not drawn: both FP32 builds are on it', async ({ page }) => {
   await page.goto('/work/aeroedge');
-  const rows = await page.locator('.pareto__table tbody tr').evaluateAll((trs) =>
-    trs.map((tr) => [...tr.querySelectorAll('th,td')].map((c) => c.textContent!.trim())),
-  );
+  const rows = await page
+    .locator('.pareto__table tbody tr')
+    .evaluateAll((trs) =>
+      trs.map((tr) => [...tr.querySelectorAll('th,td')].map((c) => c.textContent!.trim())),
+    );
   const front = Object.fromEntries(rows.map((r) => [r[0], r[4]]));
   expect(front['FP32 @416']).toBe('yes');
   expect(front['FP32 @640']).toBe('yes');

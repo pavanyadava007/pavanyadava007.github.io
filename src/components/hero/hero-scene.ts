@@ -131,7 +131,7 @@ export function startHeroScene(canvas: HTMLCanvasElement, host: HTMLElement): He
   });
 
   const geometry = new BufferGeometry();
-  let points = new Points(geometry, material);
+  const points = new Points(geometry, material);
   points.frustumCulled = false;
   scene.add(points);
 
@@ -310,7 +310,6 @@ export function startHeroScene(canvas: HTMLCanvasElement, host: HTMLElement): He
       egoMat.dispose();
       renderer.dispose();
       delete host.dataset.sceneReady;
-      points = null as unknown as Points;
     },
   };
 }

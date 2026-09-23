@@ -15,8 +15,10 @@ const host = new URL(src).host;
     <div class="demo__body">
       <p class="demo__title">{title}</p>
       <p class="demo__note">
-        {note ??
-          'The demo is hosted on Hugging Face and is loaded only when you ask for it - nothing from a third party is fetched until you press the button.'}
+        {
+          note ??
+            'The demo is hosted on Hugging Face and is loaded only when you ask for it - nothing from a third party is fetched until you press the button.'
+        }
       </p>
       <div class="demo__actions">
         <button class="btn btn--primary" type="button" data-demo-load>

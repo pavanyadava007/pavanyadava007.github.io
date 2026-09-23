@@ -5,8 +5,7 @@ const items = await buildPaletteItems();
 
 {/* The palette's data is inlined as JSON; its code is fetched on first use. */}
 <div id="palette-host"></div>
-<script type="application/json" id="palette-items" set:html={JSON.stringify(items)} is:inline
-></script>
+<script type="application/json" id="palette-items" set:html={JSON.stringify(items)} is:inline />
 
 <script>
   /**

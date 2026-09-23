@@ -40,7 +40,6 @@ for (const p of projects) {
 }
 
 export const { getStaticPaths, GET } = await OGImageRoute({
-  param: 'route',
   pages,
   getImageOptions: (_path, page: (typeof pages)[string]) => ({
     title: page.title,

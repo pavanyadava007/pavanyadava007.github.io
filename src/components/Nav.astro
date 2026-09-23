@@ -30,7 +30,12 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
     </nav>
 
     <div class="nav__end">
-      <button class="nav__cmd" type="button" data-open-palette aria-label="Open the command palette">
+      <button
+        class="nav__cmd"
+        type="button"
+        data-open-palette
+        aria-label="Open the command palette"
+      >
         <span class="mono" aria-hidden="true">⌘K</span>
       </button>
       <ThemeToggle />

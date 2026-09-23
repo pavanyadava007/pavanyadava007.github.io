@@ -44,12 +44,10 @@ const sections = [...html.matchAll(/<section id="([^"]+)">([\s\S]*?)<\/section>/
     const heading = decode(body.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1] ?? '');
     const kicker = decode(body.match(/class="kicker"[^>]*>([\s\S]*?)<\/div>/)?.[1] ?? '');
     /** `.fact` blocks are the measured numbers: `.n` is the value, `.lbl` the provenance. */
-    const metrics = [...body.matchAll(/<div class="fact">([\s\S]*?)<\/div>/g)].map(
-      ([, f]) => ({
-        value: decode(f.match(/<span class="n">([\s\S]*?)<\/span>/)?.[1] ?? ''),
-        label: decode(f.match(/<span class="lbl">([\s\S]*?)<\/span>/)?.[1] ?? ''),
-      }),
-    );
+    const metrics = [...body.matchAll(/<div class="fact">([\s\S]*?)<\/div>/g)].map(([, f]) => ({
+      value: decode(f.match(/<span class="n">([\s\S]*?)<\/span>/)?.[1] ?? ''),
+      label: decode(f.match(/<span class="lbl">([\s\S]*?)<\/span>/)?.[1] ?? ''),
+    }));
     const note = decode(body.match(/<div class="note">([\s\S]*?)<\/div>/)?.[1] ?? '');
     const links = [...body.matchAll(/<a class="btn[^"]*" href="([^"]+)">([\s\S]*?)<\/a>/g)].map(
       ([, href, text]) => ({ href, text: decode(text) }),
@@ -73,7 +71,10 @@ const snapshot = {
   metricValues: [...new Set(sections.flatMap((s) => s.metrics.map((m) => m.value)))].sort(),
 };
 
-await writeFile(resolve(ROOT, 'data/source-snapshot.json'), JSON.stringify(snapshot, null, 2) + '\n');
+await writeFile(
+  resolve(ROOT, 'data/source-snapshot.json'),
+  JSON.stringify(snapshot, null, 2) + '\n',
+);
 console.log(
   `snapshot: ${sections.length} sections, ${snapshot.metricValues.length} distinct metric values`,
 );

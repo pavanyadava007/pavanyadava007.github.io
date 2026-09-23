@@ -132,10 +132,7 @@ const COLOR = { fp32: 'var(--accent)', int8: 'var(--accent-2)' };
 
       {
         front.length > 1 && (
-          <polyline
-            class="pareto__front"
-            points={front.map((p) => `${p.cx},${p.cy}`).join(' ')}
-          />
+          <polyline class="pareto__front" points={front.map((p) => `${p.cx},${p.cy}`).join(' ')} />
         )
       }
 

@@ -27,7 +27,9 @@ const allSnr = series.flatMap((s) => s.points.map((p) => p.snr));
 const x = scaleLinear()
   .domain([Math.min(...allSnr), Math.max(...allSnr)])
   .range([M.left, W - M.right]);
-const y = scaleLinear().domain([0, 100]).range([H - M.bottom, M.top]);
+const y = scaleLinear()
+  .domain([0, 100])
+  .range([H - M.bottom, M.top]);
 
 const path = line<{ snr: number; acc: number }>()
   .x((p) => x(p.snr))

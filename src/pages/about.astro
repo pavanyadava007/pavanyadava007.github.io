@@ -23,11 +23,11 @@ const limitCount = projects.reduce((n, p) => n + p.data.limits.length, 0);
       <h1 class="about__title">Perception engineer who ships to hardware</h1>
       <p class="lede">
         3+ years in automotive ADAS and perception at Continental AG and AUMOVIO, currently
-        researching end-to-end autonomy alongside an M.Sc. in AI for Autonomous Driving at
-        FAU Erlangen-Nürnberg. I build perception systems the whole way down: BEV
-        LiDAR-camera-radar fusion, transformer encoders and multitask heads, then the
-        unglamorous part - ONNX, TensorRT FP16/INT8, ROS 2 C++, Rust, OTA fleet rollout -
-        until it runs in real time on hardware I can actually measure.
+        researching end-to-end autonomy alongside an M.Sc. in AI for Autonomous Driving at FAU
+        Erlangen-Nürnberg. I build perception systems the whole way down: BEV LiDAR-camera-radar
+        fusion, transformer encoders and multitask heads, then the unglamorous part - ONNX, TensorRT
+        FP16/INT8, ROS 2 C++, Rust, OTA fleet rollout - until it runs in real time on hardware I can
+        actually measure.
       </p>
       <div class="about__actions">
         <a class="btn btn--primary" href={site.cv} download>Download CV (PDF)</a>
@@ -44,8 +44,8 @@ const limitCount = projects.reduce((n, p) => n + p.data.limits.length, 0);
           <h3>It was measured on hardware I can name.</h3>
           <p>
             Every figure on this site carries the GPU or CPU it ran on. There are
-            {measuredCount} of them. Where a target device does not exist - Jetson Orin, a Pi 5,
-            a Coral - the row stays empty rather than being extrapolated from an L4.
+            {measuredCount} of them. Where a target device does not exist - Jetson Orin, a Pi 5, a Coral
+            - the row stays empty rather than being extrapolated from an L4.
           </p>
         </li>
         <li>
@@ -59,18 +59,18 @@ const limitCount = projects.reduce((n, p) => n + p.data.limits.length, 0);
         <li>
           <h3>The thing that did not work is written down too.</h3>
           <p>
-            {limitCount} limits are published across these projects, from INT8 measuring slower
-            than FP32 on the CPU it shipped on, to synthetic pretraining failing to transfer to
-            real RF frames, to an ACT policy that plateaued at 55 of 100. The
+            {limitCount} limits are published across these projects, from INT8 measuring slower than FP32
+            on the CPU it shipped on, to synthetic pretraining failing to transfer to real RF frames,
+            to an ACT policy that plateaued at 55 of 100. The
             <a href="/lab">lab page</a> collects them.
           </p>
         </li>
         <li>
           <h3>Safety cases are written before the code, not after the demo.</h3>
           <p>
-            ISO 26262 (ASIL-B) and ISO 21448 (SOTIF) are how I was trained to work, so the
-            robotics and perception projects carry hazard analyses, deterministic overrides over
-            learned components, and release gates that are allowed to refuse.
+            ISO 26262 (ASIL-B) and ISO 21448 (SOTIF) are how I was trained to work, so the robotics
+            and perception projects carry hazard analyses, deterministic overrides over learned
+            components, and release gates that are allowed to refuse.
           </p>
         </li>
       </ol>

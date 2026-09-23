@@ -1,7 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import type { MarkdownHeading } from 'astro';
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
+import { FORMATS } from '~/lib/image-presets';
 import Base from './Base.astro';
 import LimitsPanel from '~/components/LimitsPanel.astro';
 import DemoFacade from '~/components/DemoFacade.astro';
@@ -113,12 +114,13 @@ const jsonLd = [
       poster && (
         <div class="wrap">
           <figure class="cs__poster">
-            <Image
+            <Picture
               src={poster}
               alt={altFor(data.poster!)}
               widths={[640, 960, 1280, 1600]}
               sizes="(min-width: 1240px) 1140px, 94vw"
-              formats={['avif', 'webp']}
+              formats={FORMATS}
+              fallbackFormat="jpeg"
               loading="eager"
               transition:name={`poster-${id}`}
             />

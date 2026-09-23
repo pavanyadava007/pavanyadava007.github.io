@@ -10,15 +10,8 @@ interface Props {
   source?: string;
 }
 
-const {
-  title,
-  subtitle,
-  caption,
-  rolloutSeconds,
-  rollbackSeconds,
-  deviceCount,
-  source,
-} = Astro.props;
+const { title, subtitle, caption, rolloutSeconds, rollbackSeconds, deviceCount, source } =
+  Astro.props;
 
 /** 5% -> 50% -> 100% of the fleet, as the measured run staged it. */
 const stages = [0.05, 0.5, 1].map((share) => Math.max(1, Math.round(deviceCount * share)));
@@ -40,7 +33,7 @@ const devices = Array.from({ length: deviceCount }, (_, i) => i);
     data-stages={stages.join(',')}
   >
     <ul class="canary__fleet" aria-hidden="true">
-      {devices.map((i) => <li data-device={i}></li>)}
+      {devices.map((i) => <li data-device={i} />)}
     </ul>
 
     <p class="canary__status" role="status" data-canary-status>
@@ -287,7 +280,9 @@ const devices = Array.from({ length: deviceCount }, (_, i) => i);
         play.disabled = false;
       };
 
-      play.addEventListener('click', () => (play.textContent?.includes('Replay') ? run() : reset()));
+      play.addEventListener('click', () =>
+        play.textContent?.includes('Replay') ? run() : reset(),
+      );
       abort.addEventListener('click', doAbort);
     });
   }

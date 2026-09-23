@@ -30,7 +30,10 @@ for (const path of PAGES) {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
       const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+        // `best-practice` is included deliberately: heading-order is not a WCAG
+        // success criterion but a skipped level is a real navigation defect, and
+        // Lighthouse flags it.
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
         .analyze();
       expect(
         results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(' | ')}`),

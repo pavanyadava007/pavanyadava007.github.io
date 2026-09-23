@@ -17,7 +17,10 @@ export default function CommandPalette({
   const restoreFocus = useRef<HTMLElement | null>(null);
 
   const grouped = useMemo(
-    () => GROUP_ORDER.map((g) => [g, items.filter((i) => i.group === g)] as const).filter(([, v]) => v.length),
+    () =>
+      GROUP_ORDER.map((g) => [g, items.filter((i) => i.group === g)] as const).filter(
+        ([, v]) => v.length,
+      ),
     [items],
   );
 

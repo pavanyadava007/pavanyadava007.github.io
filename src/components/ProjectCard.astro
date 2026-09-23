@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
+import { FORMATS } from '~/lib/image-presets';
 import { STATUS_LABELS } from '~/lib/site';
 import { image } from '~/lib/media';
 
@@ -10,9 +11,15 @@ interface Props {
   layout?: 'grid' | 'list';
   /** Card images morph into the case-study header via the View Transitions API. */
   transition?: boolean;
+  /**
+   * Heading level for the card title. Cards under a section h2 keep h3; on /work the
+   * grid sits directly under the page h1, so they have to be h2 or the heading order
+   * skips a level.
+   */
+  as?: 'h2' | 'h3';
 }
 
-const { project, layout = 'grid', transition = true } = Astro.props;
+const { project, layout = 'grid', transition = true, as: Heading = 'h3' } = Astro.props;
 const { data, id } = project;
 const chips = data.metrics.slice(0, 3);
 const poster = data.poster ? image(data.poster) : null;
@@ -22,12 +29,13 @@ const poster = data.poster ? image(data.poster) : null;
   {
     poster && (
       <div class="card__media">
-        <Image
+        <Picture
           src={poster}
           alt=""
           widths={[280, 400, 640, 960]}
           sizes="(min-width: 1100px) 380px, (min-width: 720px) 45vw, 92vw"
-          formats={['avif', 'webp']}
+          formats={FORMATS}
+          fallbackFormat="jpeg"
           loading="lazy"
           decoding="async"
           transition:name={transition ? `poster-${id}` : undefined}
@@ -38,11 +46,11 @@ const poster = data.poster ? image(data.poster) : null;
 
   <div class="card__body">
     <p class="card__kicker kicker">{data.kicker}</p>
-    <h3 class="card__title">
+    <Heading class="card__title">
       <a href={`/work/${id}`}>
         {data.title}
       </a>
-    </h3>
+    </Heading>
     <p class="card__claim">{data.claim}</p>
 
     {

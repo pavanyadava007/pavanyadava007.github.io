@@ -22,9 +22,9 @@ test('the recruiter path works: hero -> proof -> a case study -> CV', async ({ p
 
 test('every project page has a limits panel and a metric with provenance', async ({ page }) => {
   await page.goto('/work');
-  const hrefs = await page.locator('.card__title a').evaluateAll((els) =>
-    els.map((e) => (e as HTMLAnchorElement).getAttribute('href')!),
-  );
+  const hrefs = await page
+    .locator('.card__title a')
+    .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).getAttribute('href')!));
   expect(hrefs.length).toBe(10);
 
   for (const href of hrefs) {

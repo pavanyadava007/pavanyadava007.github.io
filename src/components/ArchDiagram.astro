@@ -133,9 +133,11 @@ const paths = edges.flatMap(([from, to]) => {
     </svg>
   </div>
 
-  {/* Not a fallback: this list is the diagram's content, always in the DOM, and is what
+  {
+    /* Not a fallback: this list is the diagram's content, always in the DOM, and is what
       a screen reader, a printout and a no-JS browser get. Hovering a node highlights the
-      matching entry and vice versa. */}
+      matching entry and vice versa. */
+  }
   <ol class="arch__legend" data-arch-legend>
     {
       nodes.map((n) => (
@@ -284,8 +286,7 @@ const paths = edges.flatMap(([from, to]) => {
           el.toggleAttribute('data-active', id !== null && el.getAttribute('data-node') === id);
         });
         figure!.querySelectorAll<SVGPathElement>('.arch__edge').forEach((edge) => {
-          const touches =
-            id !== null && (edge.dataset.from === id || edge.dataset.to === id);
+          const touches = id !== null && (edge.dataset.from === id || edge.dataset.to === id);
           edge.toggleAttribute('data-active', touches);
         });
       };

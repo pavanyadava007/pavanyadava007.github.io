@@ -25,7 +25,8 @@
 
   --font-ui-stack: 'Inter Tight', 'Inter Tight fallback', ui-sans-serif, system-ui, sans-serif;
   --font-display-stack: 'Instrument Serif', 'Instrument Serif fallback', Georgia, serif;
-  --font-mono-stack: 'JetBrains Mono', 'JetBrains Mono fallback', ui-monospace, SFMono-Regular, monospace;
+  --font-mono-stack:
+    'JetBrains Mono', 'JetBrains Mono fallback', ui-monospace, SFMono-Regular, monospace;
 
   color-scheme: dark;
 }

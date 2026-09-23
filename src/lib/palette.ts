@@ -52,7 +52,13 @@ export async function buildPaletteItems(): Promise<PaletteItem[]> {
       href: site.social.huggingface,
       external: true,
     },
-    { id: 'action:email', label: 'Copy email address', hint: site.email, group: 'Actions', action: 'copy-email' },
+    {
+      id: 'action:email',
+      label: 'Copy email address',
+      hint: site.email,
+      group: 'Actions',
+      action: 'copy-email',
+    },
     { id: 'action:theme', label: 'Toggle dark / light theme', group: 'Actions', action: 'theme' },
   ];
 }

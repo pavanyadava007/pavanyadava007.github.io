@@ -40,8 +40,7 @@ const DISPLAY_GLYPHS =
   '—–';
 
 /** Metrics, kickers, code and stack tags, so the symbol set has to be wider. */
-const MONO_GLYPHS =
-  DISPLAY_GLYPHS + '@#%*[]{}<>=+_|~$^`\\' + '→←↑↓±·×÷≤≥°⌘…';
+const MONO_GLYPHS = DISPLAY_GLYPHS + '@#%*[]{}<>=+_|~$^`\\' + '→←↑↓±·×÷≤≥°⌘…';
 
 const FAMILIES: { slug: string; family: string; query: string; text?: string }[] = [
   { slug: 'inter-tight', family: 'Inter Tight', query: 'Inter+Tight:wght@400;500;600;700' },
@@ -169,7 +168,10 @@ const FALLBACKS: Record<string, { local: string; metrics: typeof arial }> = {
   'JetBrains Mono': { local: 'Courier New', metrics: courierNew },
 };
 
-css.push('/* Metric-matched fallbacks - keep the fallback line box the same size as the real font. */', '');
+css.push(
+  '/* Metric-matched fallbacks - keep the fallback line box the same size as the real font. */',
+  '',
+);
 
 const pct = (n: number) => `${(n * 100).toFixed(3)}%`;
 

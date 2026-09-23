@@ -60,7 +60,10 @@ function boxMarkup(b: (typeof BOXES)[number], color: string) {
   const path = (ps: (ReturnType<typeof project> | null)[]) =>
     ps.map((p, i) => `${i ? 'L' : 'M'}${p!.sx.toFixed(1)},${p!.sy.toFixed(1)}`).join('') + 'Z';
   const uprights = corners
-    .map((_, i) => `M${bottom[i]!.sx.toFixed(1)},${bottom[i]!.sy.toFixed(1)}L${top[i]!.sx.toFixed(1)},${top[i]!.sy.toFixed(1)}`)
+    .map(
+      (_, i) =>
+        `M${bottom[i]!.sx.toFixed(1)},${bottom[i]!.sy.toFixed(1)}L${top[i]!.sx.toFixed(1)},${top[i]!.sy.toFixed(1)}`,
+    )
     .join('');
   return (
     `<path d="${path(bottom)}" fill="${color}" fill-opacity="0.06" stroke="${color}" stroke-width="1.6" stroke-opacity="0.85"/>` +
@@ -74,10 +77,7 @@ const boxes = [...BOXES]
   .map((b) => boxMarkup(b, CLASS_COLOR[b.cls]))
   .join('');
 
-const ego = boxMarkup(
-  { x: 0, z: 0, w: EGO.w, l: EGO.l, h: EGO.h, yaw: 0, cls: 'car' },
-  '#e8eaed',
-);
+const ego = boxMarkup({ x: 0, z: 0, w: EGO.w, l: EGO.l, h: EGO.h, yaw: 0, cls: 'car' }, '#e8eaed');
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
 <defs>
@@ -122,4 +122,6 @@ for (const { suffix, width, avif, webp } of SIZES) {
     await base.clone().jpeg({ quality: 74, progressive: true }).toBuffer(),
   );
 }
-console.log(`hero poster: ${pts.length} visible points, ${BOXES.length} boxes, ${SIZES.length} widths`);
+console.log(
+  `hero poster: ${pts.length} visible points, ${BOXES.length} boxes, ${SIZES.length} widths`,
+);

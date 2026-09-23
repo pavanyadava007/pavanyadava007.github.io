@@ -14,8 +14,10 @@ const { name, caption, description, width, height, loop = false } = Astro.props;
 ---
 
 <figure class="vid">
-  {/* preload="none": nothing is fetched until the visitor presses play. The poster
-      reserves the box, so there is no layout shift either way. */}
+  {
+    /* preload="none": nothing is fetched until the visitor presses play. The poster
+      reserves the box, so there is no layout shift either way. */
+  }
   <video
     controls
     muted

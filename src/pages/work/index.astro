@@ -56,7 +56,9 @@ const IMPACT = [
           filters.map((c) => (
             <button class="work__chip" type="button" data-filter={c} aria-pressed="false">
               {CATEGORY_LABELS[c]}
-              <span class="mono">{projects.filter((p) => p.data.categories.includes(c)).length}</span>
+              <span class="mono">
+                {projects.filter((p) => p.data.categories.includes(c)).length}
+              </span>
             </button>
           ))
         }
@@ -89,7 +91,7 @@ const IMPACT = [
             data-recent={project.data.order}
             data-impact={IMPACT.indexOf(project.id)}
           >
-            <ProjectCard project={project} />
+            <ProjectCard project={project} as="h2" />
           </div>
         ))
       }
@@ -234,8 +236,9 @@ const IMPACT = [
    * can send someone. No framework: this is three attributes and a sort.
    */
   function wireWork() {
-    const grid = document.querySelector<HTMLElement>('[data-work-grid]');
-    if (!grid || grid.dataset.wired) return;
+    const gridEl = document.querySelector<HTMLElement>('[data-work-grid]');
+    if (!gridEl || gridEl.dataset.wired) return;
+    const grid = gridEl;
     grid.dataset.wired = '1';
 
     const cells = [...grid.querySelectorAll<HTMLElement>('[data-project]')];
@@ -268,7 +271,9 @@ const IMPACT = [
       chips.forEach((c) =>
         c.setAttribute('aria-pressed', String(c.dataset.filter === state.filter)),
       );
-      viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === state.view)));
+      viewBtns.forEach((b) =>
+        b.setAttribute('aria-pressed', String(b.dataset.viewBtn === state.view)),
+      );
       if (sortSel) sortSel.value = state.sort;
       grid.dataset.view = state.view;
 

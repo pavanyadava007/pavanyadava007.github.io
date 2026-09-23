@@ -1,4 +1,5 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { glob, file } from 'astro/loaders';
 
 /**
@@ -13,7 +14,7 @@ const metric = z.object({
   hardware: z.string().optional(),
   dataset: z.string().optional(),
   n: z.string().optional(),
-  source: z.string().url().optional(),
+  source: z.url().optional(),
   illustrative: z.boolean().default(false),
 });
 
@@ -54,11 +55,11 @@ const projects = defineCollection({
     metrics: z.array(metric).default([]),
     limits: z.array(limit),
     links: z.object({
-      demo: z.string().url().optional(),
-      code: z.string().url().optional(),
-      results: z.string().url().optional(),
-      modelCard: z.string().url().optional(),
-      hazard: z.string().url().optional(),
+      demo: z.url().optional(),
+      code: z.url().optional(),
+      results: z.url().optional(),
+      modelCard: z.url().optional(),
+      hazard: z.url().optional(),
     }),
     poster: z.string().optional(),
     video: z.string().optional(),
