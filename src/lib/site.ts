@@ -1,7 +1,7 @@
 export const site = {
   name: 'Pavan Yadava Annappa',
-  role: 'ML Engineer — 3D Perception, Sensor Fusion & Edge Deployment',
-  title: 'Pavan Yadava Annappa — ML Engineer, 3D Perception & Edge Deployment',
+  role: 'ML Engineer - 3D Perception, Sensor Fusion & Edge Deployment',
+  title: 'Pavan Yadava Annappa - ML Engineer, 3D Perception & Edge Deployment',
   description:
     'ML engineer building 3D perception and sensor fusion, then shipping it to hardware: TensorRT, ONNX, ROS 2, Rust. Every number measured on stated hardware.',
   url: 'https://pavanyadava007.github.io',

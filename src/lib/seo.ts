@@ -12,7 +12,7 @@ export interface SeoInput {
 export function resolveSeo(input: SeoInput) {
   const canonical = new URL(input.path, site.url).href;
   return {
-    title: input.title ? `${input.title} — ${site.name}` : site.title,
+    title: input.title ? `${input.title} - ${site.name}` : site.title,
     description: input.description ?? site.description,
     canonical,
     image: new URL(input.image ?? '/og/index.png', site.url).href,
@@ -27,7 +27,7 @@ export function personJsonLd() {
     name: site.name,
     url: site.url,
     email: `mailto:${site.email}`,
-    jobTitle: 'Machine Learning Engineer — 3D Perception, Sensor Fusion & Edge Deployment',
+    jobTitle: 'Machine Learning Engineer - 3D Perception, Sensor Fusion & Edge Deployment',
     address: { '@type': 'PostalAddress', addressLocality: 'Nürnberg', addressCountry: 'DE' },
     knowsAbout: [...site.knowsAbout],
     sameAs: [site.social.github, site.social.linkedin, site.social.huggingface],

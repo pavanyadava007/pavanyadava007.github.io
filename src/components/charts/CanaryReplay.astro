@@ -264,7 +264,7 @@ const devices = Array.from({ length: deviceCount }, (_, i) => i);
             d.dataset.state = i < target ? 'new' : i < target + 1 ? 'rolling' : '';
             if (!d.dataset.state) delete d.dataset.state;
           });
-          status.textContent = `Stage ${stageIndex + 1} of 3 — ${target} of ${devices.length} agents on the new build, health window green.`;
+          status.textContent = `Stage ${stageIndex + 1} of 3 - ${target} of ${devices.length} agents on the new build, health window green.`;
 
           if (p < 1) raf = requestAnimationFrame(step);
           else {

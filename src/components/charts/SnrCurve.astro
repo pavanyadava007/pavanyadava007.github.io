@@ -149,7 +149,7 @@ const snrTicks = [...new Set(allSnr)].sort((a, b) => a - b);
                 {t}
               </th>
               {drawn.map((s) => (
-                <td class="mono">{s.points.find((p) => p.snr === t)?.acc ?? '—'}%</td>
+                <td class="mono">{s.points.find((p) => p.snr === t)?.acc ?? 'n/a'}%</td>
               ))}
             </tr>
           ))

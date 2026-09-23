@@ -23,7 +23,7 @@ export function provenance(m: {
   illustrative?: boolean;
 }): string[] {
   const out: string[] = [];
-  if (m.illustrative) out.push('illustrative — not a measurement');
+  if (m.illustrative) out.push('illustrative - not a measurement');
   if (m.hardware) out.push(m.hardware);
   if (m.dataset) out.push(m.dataset);
   if (m.n) out.push(m.n);
@@ -31,5 +31,5 @@ export function provenance(m: {
 }
 
 export function dateRange(start: string, end: string | null): string {
-  return end === null ? `${start} – present` : start === end ? start : `${start} – ${end}`;
+  return end === null ? `${start} - present` : start === end ? start : `${start} - ${end}`;
 }

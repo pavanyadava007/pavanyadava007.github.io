@@ -91,7 +91,7 @@ const unit = mode === 'stages' ? 'of the pass' : 'of the slowest runtime';
               <th scope="row">{bar.name}</th>
               <td class="mono">{bar.ms}</td>
               <td class="mono">{bar.share.toFixed(0)}%</td>
-              <td>{bar.note ?? '—'}</td>
+              <td>{bar.note ?? 'n/a'}</td>
             </tr>
           ))
         }
