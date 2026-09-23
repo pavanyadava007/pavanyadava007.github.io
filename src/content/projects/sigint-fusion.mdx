@@ -61,6 +61,23 @@ links:
   results: https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md
 ---
 
+import ArchDiagram from '~/components/ArchDiagram.astro';
+import Shots from '~/components/Shots.astro';
+import SnrCurve from '~/components/charts/SnrCurve.astro';
+
+<Shots
+  shots={[
+    {
+      src: 'sigint-overview.png',
+      caption: 'Overview: spectrum waterfall, EOB bearing rose, and live detections at 1.82 ms p50 classification.',
+    },
+    {
+      src: 'sigint-analyst.png',
+      caption: 'Analyst: a LangGraph agent identifies an emitter from retrieved catalogue entries and saves a report.',
+    },
+  ]}
+/>
+
 ## Problem & constraints
 
 Modulation classification is a solved-looking problem with an unsolved data problem: the good
@@ -71,6 +88,8 @@ The platform constraints were separate from the model question. Nine services, h
 with a **validated Java ingest boundary** in front of the model - because in a signals pipeline
 the malformed capture is not an edge case, and a Python consumer should never be the first thing
 to see one.
+
+<ArchDiagram {...frontmatter.arch} />
 
 ## Results
 
@@ -83,6 +102,33 @@ The serving path holds up: **1.48 ms** model-only p50 and **251 req/s** at 32 co
 on CPU ONNX Runtime, with an end-to-end p50 of 110 ms across the full HTTP path. Retrieval reaches
 **hit@5 100% and MRR 0.93** over 53 questions with hybrid dense + full-text, against 98.1%
 dense-only, and the LangGraph analyst completed 10/10 tasks on a local qwen2.5:7b.
+
+<SnrCurve
+  title="Accuracy against signal-to-noise ratio"
+  subtitle="ResNet-1D, 21 modulations, 1024-sample frames. Both curves are the same architecture and the same training recipe on different data."
+  caption="The gap between the two curves is the point of the project. The real-data model is worse below about 0 dB and much better above it, which is what you would expect if the synthetic channel model is too easy at low SNR and too simple at high SNR. Values are the per-SNR rows of the repository's results table."
+  source="https://github.com/pavanyadava007/sigint-fusion/blob/main/docs/results.md"
+  series={[
+    {
+      name: 'Real DeepSig RadioML 2018.01A',
+      note: 'val top-1 75.7%',
+      color: 'var(--accent)',
+      points: [
+        { snr: -10, acc: 17 }, { snr: -4, acc: 40 }, { snr: 0, acc: 59 },
+        { snr: 4, acc: 79 }, { snr: 10, acc: 94 }, { snr: 20, acc: 95 }, { snr: 30, acc: 96 },
+      ],
+    },
+    {
+      name: 'Synthetic RadioML-layout data',
+      note: 'val top-1 71.6% — pipeline numbers, not RadioML results',
+      color: 'var(--accent-2)',
+      points: [
+        { snr: -10, acc: 31 }, { snr: -4, acc: 51 }, { snr: 0, acc: 59 },
+        { snr: 4, acc: 69 }, { snr: 10, acc: 83 }, { snr: 20, acc: 85 }, { snr: 30, acc: 87 },
+      ],
+    },
+  ]}
+/>
 
 ## Ablations
 

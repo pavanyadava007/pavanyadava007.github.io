@@ -76,6 +76,23 @@ links:
   hazard: https://github.com/pavanyadava007/langgrasp/blob/master/docs/FMEA.md
 ---
 
+import ArchDiagram from '~/components/ArchDiagram.astro';
+import LatencyWaterfall from '~/components/charts/LatencyWaterfall.astro';
+import Shots from '~/components/Shots.astro';
+
+<Shots
+  shots={[
+    {
+      src: 'langgrasp-live.png',
+      caption: 'Live Run: candidates with their scores and colour fractions, the chosen box, the grasp pose and jaw yaw, the nine stages with their measured latencies, and a safety rail that never leaves the screen.',
+    },
+    {
+      src: 'langgrasp-safety.png',
+      caption: 'Safety: each hazard with the code implementing its mitigation, the test that exercises it, and whether it was exercised here or needs hardware that does not exist.',
+    },
+  ]}
+/>
+
 ## Problem & constraints
 
 A language-guided pick is only interesting if you can say *why* it picked that object, and only
@@ -89,6 +106,10 @@ at ~297 ms it is the whole latency budget. Segmentation is a small fine-tuned mo
 TensorRT rather than a foundation segmenter, because it has to stay under the 10 Hz control tick.
 And the safety monitor is a separate process-level gate with a latched e-stop, not an `if`
 statement inside the controller.
+
+<ArchDiagram {...frontmatter.arch} />
+
+<LatencyWaterfall {...frontmatter.latency} />
 
 ## Results
 

@@ -1,0 +1,24 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import CaseStudy from '~/layouts/CaseStudy.astro';
+
+export const getStaticPaths = (async () => {
+  const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project, i) => ({
+    params: { slug: project.id },
+    props: {
+      project,
+      prev: projects[i - 1] ?? null,
+      next: projects[i + 1] ?? null,
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { project, prev, next } = Astro.props;
+const { Content, headings } = await render(project);
+---
+
+<CaseStudy project={project} headings={headings} prev={prev} next={next}>
+  <Content />
+</CaseStudy>

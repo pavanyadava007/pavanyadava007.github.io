@@ -1,0 +1,102 @@
+---
+interface Props {
+  /** The Hugging Face Space (or other) URL to embed. */
+  src: string;
+  title: string;
+  note?: string;
+}
+const { src, title, note } = Astro.props;
+const host = new URL(src).host;
+---
+
+<section class="demo" id="demo" aria-labelledby="demo-heading">
+  <h2 class="demo__heading" id="demo-heading">Live demo</h2>
+  <div class="demo__facade" data-demo-facade data-src={src} data-title={title}>
+    <div class="demo__body">
+      <p class="demo__title">{title}</p>
+      <p class="demo__note">
+        {note ??
+          'The demo is hosted on Hugging Face and is loaded only when you ask for it - nothing from a third party is fetched until you press the button.'}
+      </p>
+      <div class="demo__actions">
+        <button class="btn btn--primary" type="button" data-demo-load>
+          Load the demo from {host}
+        </button>
+        <a class="btn" href={src} rel="noopener" target="_blank">Open in a new tab</a>
+      </div>
+      <p class="demo__cold">A cold Space can take a minute to wake up.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo {
+    scroll-margin-top: 6rem;
+  }
+  .demo__heading {
+    font-size: var(--t-h3);
+    margin-bottom: 0.9rem;
+  }
+  .demo__facade {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    overflow: hidden;
+    min-height: 16rem;
+    display: grid;
+  }
+  .demo__facade:has(iframe) {
+    min-height: min(78vh, 46rem);
+  }
+  .demo__body {
+    padding: 2rem 1.5rem;
+    align-self: center;
+    max-width: 52ch;
+  }
+  .demo__title {
+    font-weight: 600;
+  }
+  .demo__note {
+    margin-top: 0.5rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+  }
+  .demo__actions {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .demo__cold {
+    margin-top: 0.9rem;
+    color: var(--fg-dim);
+    font-size: var(--t-xs);
+  }
+  .demo__facade :global(iframe) {
+    width: 100%;
+    height: min(78vh, 46rem);
+    border: 0;
+    display: block;
+  }
+</style>
+
+<script>
+  function wireFacades() {
+    document.querySelectorAll<HTMLElement>('[data-demo-facade]').forEach((facade) => {
+      if (facade.dataset.wired) return;
+      facade.dataset.wired = '1';
+      facade.querySelector('[data-demo-load]')?.addEventListener('click', () => {
+        const iframe = document.createElement('iframe');
+        iframe.src = facade.dataset.src ?? '';
+        iframe.title = facade.dataset.title ?? 'Live demo';
+        iframe.loading = 'lazy';
+        iframe.allow = 'clipboard-write; fullscreen';
+        iframe.referrerPolicy = 'no-referrer-when-downgrade';
+        facade.replaceChildren(iframe);
+        iframe.focus();
+      });
+    });
+  }
+  wireFacades();
+  document.addEventListener('astro:page-load', wireFacades);
+</script>

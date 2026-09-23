@@ -1,0 +1,57 @@
+---
+import { Image } from 'astro:assets';
+import { image, alt as altFor } from '~/lib/media';
+
+interface Props {
+  /** Filenames registered in src/lib/media.ts, with their captions. */
+  shots: { src: string; caption: string }[];
+}
+const { shots } = Astro.props;
+---
+
+<div class="shots">
+  {
+    shots.map((shot) => (
+      <figure class="shots__item">
+        <Image
+          src={image(shot.src)}
+          alt={altFor(shot.src)}
+          widths={[480, 720, 960]}
+          sizes="(min-width: 900px) 46vw, 92vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+        />
+        <figcaption>{shot.caption}</figcaption>
+      </figure>
+    ))
+  }
+</div>
+
+<style>
+  .shots {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  }
+  .shots__item {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+  }
+  .shots__item :global(img) {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  .shots__item figcaption {
+    padding: 0.75rem 0.9rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+    flex: 1;
+  }
+</style>

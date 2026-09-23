@@ -60,6 +60,10 @@ links:
   modelCard: https://huggingface.co/pavanyadava07/aeroedge-yolo11n
 ---
 
+import ArchDiagram from '~/components/ArchDiagram.astro';
+import Pareto from '~/components/charts/Pareto.astro';
+import CanaryReplay from '~/components/charts/CanaryReplay.astro';
+
 ## Problem & constraints
 
 Most model-compression write-ups stop at the conversion script. The question this project was
@@ -72,6 +76,8 @@ before the swap. The rollout is staged with health windows and can be aborted fr
 second inference path in a different language has to agree with the first to box-level IoU > 0.99,
 so that "it works in Python" is not the only evidence.
 
+<ArchDiagram {...frontmatter.arch} />
+
 ## Results
 
 The rollout numbers are the ones I trust most, because they were measured against 20 live agents
@@ -82,6 +88,16 @@ health failure - which is the kind of thing that only appears when you actually 
 
 The Rust runtime reached **-20% RSS** (134.8 vs 168.7 MB) on the same `.so` and the same model,
 with a 109 ms cold start, and is CI-gated against the Python path so the two cannot drift.
+
+<CanaryReplay
+  title="The rollout, replayed"
+  subtitle="20 Docker agents over real MQTT, 30 s health windows, staged 5% → 50% → 100% with automatic rollback."
+  caption="The clock counts the measured seconds; the animation is compressed so it fits in a page visit. Abort at any point to replay the rollback. Running this repeatedly is how the canary false-positive - post-swap cold-start latency counted as a health failure - was found."
+  rolloutSeconds={90.6}
+  rollbackSeconds={4.7}
+  deviceCount={20}
+  source="https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md"
+/>
 
 ## Ablations
 
@@ -101,3 +117,16 @@ produced **mAP 0.000**, because box coordinates and class probabilities cannot s
 scale. QAT was blocked by torch 2.6 removing `prepare_qat_fx`. Structured pruning found **0
 prunable groups** on YOLO11, and distillation came in at 0.6835 against a 0.6878 baseline - no
 gain, not shipped.
+
+<Pareto
+  title="What INT8 quantization actually bought on this CPU"
+  subtitle="Four exported variants, measured: ONNX Runtime, 8 threads, AMD EPYC 7R13, batch 1, fleet paused. Arrows point from each FP32 build to its INT8 counterpart."
+  caption="Both INT8 points sit below and to the right of their FP32 counterparts: on this x86 CPU quantization cost accuracy and latency, so the Pareto front (dashed) is the two FP32 builds. INT8 still ships, because the thing it does buy is a 3.3x smaller artefact to push over the air."
+  source="https://github.com/pavanyadava007/aeroedge/blob/main/docs/results.md"
+  points={[
+    { label: 'FP32 @416', latency: 12.8, map: 0.44, sizeMb: 10.51, precision: 'fp32' },
+    { label: 'INT8 @416', latency: 13.1, map: 0.396, sizeMb: 3.07, precision: 'int8', quantizedFrom: 'FP32 @416' },
+    { label: 'FP32 @640', latency: 26.3, map: 0.569, sizeMb: 10.61, precision: 'fp32' },
+    { label: 'INT8 @640', latency: 29.6, map: 0.523, sizeMb: 3.17, precision: 'int8', shipped: true, quantizedFrom: 'FP32 @640' },
+  ]}
+/>

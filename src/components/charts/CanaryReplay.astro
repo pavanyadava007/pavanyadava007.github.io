@@ -1,0 +1,296 @@
+---
+interface Props {
+  title: string;
+  subtitle: string;
+  caption: string;
+  /** Verbatim measured durations, shown as the replay's clock. */
+  rolloutSeconds: number;
+  rollbackSeconds: number;
+  deviceCount: number;
+  source?: string;
+}
+
+const {
+  title,
+  subtitle,
+  caption,
+  rolloutSeconds,
+  rollbackSeconds,
+  deviceCount,
+  source,
+} = Astro.props;
+
+/** 5% -> 50% -> 100% of the fleet, as the measured run staged it. */
+const stages = [0.05, 0.5, 1].map((share) => Math.max(1, Math.round(deviceCount * share)));
+const devices = Array.from({ length: deviceCount }, (_, i) => i);
+---
+
+<figure class="canary" id="canary">
+  <figcaption class="canary__head">
+    <h3 class="canary__title">{title}</h3>
+    <p class="canary__sub">{subtitle}</p>
+    <p class="canary__badge mono">replay of a measured run</p>
+  </figcaption>
+
+  <div
+    class="canary__stage"
+    data-canary
+    data-rollout={rolloutSeconds}
+    data-rollback={rollbackSeconds}
+    data-stages={stages.join(',')}
+  >
+    <ul class="canary__fleet" aria-hidden="true">
+      {devices.map((i) => <li data-device={i}></li>)}
+    </ul>
+
+    <p class="canary__status" role="status" data-canary-status>
+      {deviceCount} agents on the previous build. Press play to replay the measured rollout.
+    </p>
+
+    <div class="canary__controls">
+      <button class="btn btn--primary" type="button" data-canary-play>Replay rollout</button>
+      <button class="btn" type="button" data-canary-abort disabled>Abort → rollback</button>
+      <span class="canary__clock mono" data-canary-clock>0.0 s</span>
+    </div>
+  </div>
+
+  <p class="canary__caption">{caption}</p>
+
+  <table class="canary__table">
+    <caption>The measured run this replay animates</caption>
+    <tbody>
+      <tr>
+        <th scope="row">Full canary 5% → 50% → 100% across {deviceCount} live agents</th>
+        <td class="mono">{rolloutSeconds} s, 0 failures</td>
+      </tr>
+      <tr>
+        <th scope="row">Abort → rollback broadcast → all switched devices reverted</th>
+        <td class="mono">{rollbackSeconds} s</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {
+    source && (
+      <p class="canary__source">
+        <a href={source} rel="noopener">
+          Source measurements →
+        </a>
+      </p>
+    )
+  }
+</figure>
+
+<style>
+  .canary {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.4rem 1.4rem 1.2rem;
+    scroll-margin-top: 6rem;
+  }
+  .canary__title {
+    font-size: var(--t-h3);
+  }
+  .canary__sub {
+    margin-top: 0.35rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 68ch;
+  }
+  .canary__badge {
+    display: inline-block;
+    margin-top: 0.7rem;
+    font-size: var(--t-xs);
+    color: var(--accent-2);
+    border: 1px solid var(--accent-2);
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+  }
+  .canary__stage {
+    margin-top: 1.25rem;
+  }
+  .canary__fleet {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .canary__fleet li {
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 4px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg-sunk);
+    transition:
+      background 220ms var(--ease),
+      border-color 220ms var(--ease);
+  }
+  .canary__fleet li[data-state='new'] {
+    background: color-mix(in srgb, var(--ok) 55%, transparent);
+    border-color: var(--ok);
+  }
+  .canary__fleet li[data-state='rolling'] {
+    background: color-mix(in srgb, var(--accent) 45%, transparent);
+    border-color: var(--accent);
+  }
+  .canary__fleet li[data-state='reverted'] {
+    background: color-mix(in srgb, var(--accent-2) 45%, transparent);
+    border-color: var(--accent-2);
+  }
+  .canary__status {
+    margin-top: 1rem;
+    font-size: var(--t-sm);
+    color: var(--fg-muted);
+    min-height: 2.6em;
+  }
+  .canary__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+    margin-top: 0.5rem;
+  }
+  .canary__clock {
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+  .canary__caption {
+    margin-top: 1.25rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 68ch;
+  }
+  .canary__table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 1rem;
+    font-size: var(--t-xs);
+  }
+  .canary__table caption {
+    text-align: left;
+    color: var(--fg-dim);
+    padding-bottom: 0.5rem;
+  }
+  .canary__table th,
+  .canary__table td {
+    text-align: left;
+    padding: 0.45rem 0.8rem 0.45rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--fg-muted);
+    font-weight: 400;
+  }
+  .canary__table td {
+    color: var(--fg);
+    white-space: nowrap;
+  }
+  .canary__source {
+    margin-top: 0.8rem;
+    font-size: var(--t-xs);
+  }
+  .canary__source a {
+    color: var(--accent);
+  }
+</style>
+
+<script>
+  /**
+   * Animates the shape of a rollout that was measured once. The clock counts the real
+   * measured seconds; the animation is compressed so it fits in a page visit, and the
+   * figure says so on its badge. Nothing here is a new measurement.
+   */
+  const REPLAY_MS = 6000;
+
+  function wireCanary() {
+    document.querySelectorAll<HTMLElement>('[data-canary]').forEach((el) => {
+      if (el.dataset.wired) return;
+      el.dataset.wired = '1';
+
+      const devices = [...el.querySelectorAll<HTMLElement>('[data-device]')];
+      const status = el.querySelector<HTMLElement>('[data-canary-status]')!;
+      const clock = el.querySelector<HTMLElement>('[data-canary-clock]')!;
+      const play = el.querySelector<HTMLButtonElement>('[data-canary-play]')!;
+      const abort = el.querySelector<HTMLButtonElement>('[data-canary-abort]')!;
+
+      const rollout = Number(el.dataset.rollout);
+      const rollback = Number(el.dataset.rollback);
+      const stages = (el.dataset.stages ?? '').split(',').map(Number);
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      let raf = 0;
+      let aborted = false;
+
+      const reset = () => {
+        cancelAnimationFrame(raf);
+        devices.forEach((d) => delete d.dataset.state);
+        clock.textContent = '0.0 s';
+        abort.disabled = true;
+        play.disabled = false;
+      };
+
+      const settle = (count: number, state: string) => {
+        devices.forEach((d, i) => {
+          if (i < count) d.dataset.state = state;
+        });
+      };
+
+      const run = () => {
+        aborted = false;
+        play.disabled = true;
+        abort.disabled = false;
+        devices.forEach((d) => delete d.dataset.state);
+
+        if (reduced.matches) {
+          settle(devices.length, 'new');
+          clock.textContent = `${rollout.toFixed(1)} s`;
+          status.textContent = `Rollout complete: ${devices.length} of ${devices.length} agents on the new build in ${rollout} s, 0 failures.`;
+          abort.disabled = true;
+          play.disabled = false;
+          return;
+        }
+
+        const start = performance.now();
+        const step = (now: number) => {
+          if (aborted) return;
+          const p = Math.min(1, (now - start) / REPLAY_MS);
+          clock.textContent = `${(p * rollout).toFixed(1)} s`;
+
+          const stageIndex = p < 0.34 ? 0 : p < 0.67 ? 1 : 2;
+          const target = stages[stageIndex];
+          devices.forEach((d, i) => {
+            d.dataset.state = i < target ? 'new' : i < target + 1 ? 'rolling' : '';
+            if (!d.dataset.state) delete d.dataset.state;
+          });
+          status.textContent = `Stage ${stageIndex + 1} of 3 — ${target} of ${devices.length} agents on the new build, health window green.`;
+
+          if (p < 1) raf = requestAnimationFrame(step);
+          else {
+            status.textContent = `Rollout complete: ${devices.length} of ${devices.length} agents on the new build in ${rollout} s, 0 failures.`;
+            abort.disabled = true;
+            play.disabled = false;
+          }
+        };
+        raf = requestAnimationFrame(step);
+      };
+
+      const doAbort = () => {
+        aborted = true;
+        cancelAnimationFrame(raf);
+        abort.disabled = true;
+        const switched = devices.filter((d) => d.dataset.state).length;
+        settle(switched, 'reverted');
+        clock.textContent = `${rollback.toFixed(1)} s`;
+        status.textContent = `Abort broadcast. All ${switched} switched agents reverted to the previous build in ${rollback} s.`;
+        play.disabled = false;
+      };
+
+      play.addEventListener('click', () => (play.textContent?.includes('Replay') ? run() : reset()));
+      abort.addEventListener('click', doAbort);
+    });
+  }
+  wireCanary();
+  document.addEventListener('astro:page-load', wireCanary);
+</script>

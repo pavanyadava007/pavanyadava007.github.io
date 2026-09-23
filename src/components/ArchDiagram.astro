@@ -1,0 +1,317 @@
+---
+interface Node {
+  id: string;
+  label: string;
+  detail: string;
+  col: number;
+  row: number;
+  kind: 'input' | 'compute' | 'head' | 'output' | 'guard';
+}
+
+interface Props {
+  title: string;
+  caption: string;
+  nodes: Node[];
+  edges: [string, string][];
+}
+
+const { title, caption, nodes, edges } = Astro.props;
+
+/** Grid geometry, resolved at build time so the SVG is complete without JS. */
+const COL_W = 168;
+const ROW_H = 104;
+const NODE_W = 138;
+const NODE_H = 62;
+const PAD = 14;
+
+/** Normalise to the used range so an unoccupied first row does not become blank canvas. */
+const col0 = Math.min(...nodes.map((n) => n.col));
+const row0 = Math.min(...nodes.map((n) => n.row));
+const cols = Math.max(...nodes.map((n) => n.col)) - col0 + 1;
+const rows = Math.max(...nodes.map((n) => n.row)) - row0 + 1;
+const W = cols * COL_W + PAD * 2;
+const H = rows * ROW_H + PAD * 2;
+
+const pos = new Map(
+  nodes.map((n) => [
+    n.id,
+    {
+      x: PAD + (n.col - col0) * COL_W + (COL_W - NODE_W) / 2,
+      y: PAD + (n.row - row0) * ROW_H + (ROW_H - NODE_H) / 2,
+    },
+  ]),
+);
+
+const paths = edges.flatMap(([from, to]) => {
+  const a = pos.get(from);
+  const b = pos.get(to);
+  if (!a || !b) return [];
+  const x1 = a.x + NODE_W;
+  const y1 = a.y + NODE_H / 2;
+  const x2 = b.x;
+  const y2 = b.y + NODE_H / 2;
+  // Back-edges (a guard feeding an earlier node) route under the row instead of through it.
+  const mid = x2 > x1 ? (x1 + x2) / 2 : x1 + 26;
+  const d =
+    x2 > x1
+      ? `M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2},${y2}`
+      : `M${a.x + NODE_W / 2},${a.y} C${a.x + NODE_W / 2},${a.y - 34} ${b.x + NODE_W / 2},${b.y - 34} ${b.x + NODE_W / 2},${b.y}`;
+  return [{ from, to, d }];
+});
+---
+
+<figure class="arch" id="architecture">
+  <figcaption class="arch__head">
+    <h2 class="arch__title">{title}</h2>
+    <p class="arch__caption">{caption}</p>
+  </figcaption>
+
+  <div class="arch__scroll">
+    <svg
+      class="arch__svg"
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      role="img"
+      aria-label={`${title}. The same information is listed below the diagram.`}
+      data-arch
+    >
+      <defs>
+        <marker
+          id="arch-arrow"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="5"
+          markerHeight="5"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,1 L9,5 L0,9" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+        </marker>
+      </defs>
+
+      <g class="arch__edges">
+        {
+          paths.map((p) => (
+            <path
+              class="arch__edge"
+              d={p.d}
+              data-from={p.from}
+              data-to={p.to}
+              marker-end="url(#arch-arrow)"
+            />
+          ))
+        }
+      </g>
+
+      <g class="arch__nodes">
+        {
+          nodes.map((n) => {
+            const p = pos.get(n.id)!;
+            return (
+              <g class="arch__node" data-node={n.id} data-kind={n.kind}>
+                <rect x={p.x} y={p.y} width={NODE_W} height={NODE_H} rx="7" />
+                <text x={p.x + NODE_W / 2} y={p.y + NODE_H / 2 + 4} text-anchor="middle">
+                  {n.label.length > 20 ? (
+                    <>
+                      <tspan x={p.x + NODE_W / 2} dy="-6">
+                        {n.label.slice(0, n.label.lastIndexOf(' ', 20))}
+                      </tspan>
+                      <tspan x={p.x + NODE_W / 2} dy="14">
+                        {n.label.slice(n.label.lastIndexOf(' ', 20) + 1)}
+                      </tspan>
+                    </>
+                  ) : (
+                    n.label
+                  )}
+                </text>
+              </g>
+            );
+          })
+        }
+      </g>
+    </svg>
+  </div>
+
+  {/* Not a fallback: this list is the diagram's content, always in the DOM, and is what
+      a screen reader, a printout and a no-JS browser get. Hovering a node highlights the
+      matching entry and vice versa. */}
+  <ol class="arch__legend" data-arch-legend>
+    {
+      nodes.map((n) => (
+        <li data-node={n.id} data-kind={n.kind}>
+          <button type="button" data-arch-focus={n.id}>
+            <span class="arch__legend-label">{n.label}</span>
+            <span class="arch__legend-detail">{n.detail}</span>
+          </button>
+        </li>
+      ))
+    }
+  </ol>
+</figure>
+
+<style>
+  .arch {
+    margin: 0;
+    scroll-margin-top: 6rem;
+  }
+  .arch__title {
+    font-size: var(--t-h3);
+  }
+  .arch__caption {
+    margin-top: 0.4rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 68ch;
+  }
+  .arch__scroll {
+    margin-top: 1.25rem;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.5rem;
+    scrollbar-width: thin;
+  }
+  .arch__svg {
+    display: block;
+    min-width: 100%;
+    height: auto;
+    color: var(--fg-dim);
+    font-family: var(--font-ui-stack);
+    font-size: 11.5px;
+  }
+  .arch__edge {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1.4;
+    color: var(--line-strong);
+    transition:
+      stroke 200ms var(--ease),
+      color 200ms var(--ease);
+  }
+  .arch__edge[data-active] {
+    stroke: var(--accent);
+    color: var(--accent);
+    stroke-width: 2;
+  }
+  .arch__node rect {
+    fill: var(--bg-sunk);
+    stroke: var(--line-strong);
+    stroke-width: 1.2;
+    transition:
+      stroke 200ms var(--ease),
+      fill 200ms var(--ease);
+  }
+  .arch__node text {
+    fill: var(--fg);
+  }
+  .arch__node[data-kind='input'] rect {
+    stroke: color-mix(in srgb, var(--fg-muted) 60%, transparent);
+    stroke-dasharray: 4 3;
+  }
+  .arch__node[data-kind='guard'] rect {
+    stroke: var(--accent-2);
+  }
+  .arch__node[data-kind='output'] rect {
+    fill: var(--accent-soft);
+    stroke: var(--accent);
+  }
+  .arch__node[data-active] rect {
+    stroke: var(--accent);
+    stroke-width: 2;
+    fill: var(--accent-soft);
+  }
+
+  .arch__legend {
+    list-style: none;
+    counter-reset: node;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .arch__legend li {
+    background: var(--bg);
+  }
+  .arch__legend button {
+    display: grid;
+    gap: 0.15rem;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    padding: 0.7rem 0.9rem;
+    cursor: pointer;
+    transition: background 200ms var(--ease);
+  }
+  .arch__legend li[data-active] button,
+  .arch__legend button:hover {
+    background: var(--bg-elev);
+  }
+  .arch__legend li[data-active] {
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  .arch__legend-label {
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .arch__legend li[data-kind='guard'] .arch__legend-label {
+    color: var(--accent-2);
+  }
+  .arch__legend-detail {
+    font-size: var(--t-xs);
+    color: var(--fg-muted);
+  }
+</style>
+
+<script>
+  function wireArch() {
+    document.querySelectorAll<SVGSVGElement>('[data-arch]').forEach((svg) => {
+      if (svg.dataset.wired) return;
+      svg.dataset.wired = '1';
+      const figure = svg.closest('figure');
+      const legend = figure?.querySelector<HTMLElement>('[data-arch-legend]');
+      if (!legend) return;
+
+      const setActive = (id: string | null) => {
+        figure!.querySelectorAll('[data-node]').forEach((el) => {
+          el.toggleAttribute('data-active', id !== null && el.getAttribute('data-node') === id);
+        });
+        figure!.querySelectorAll<SVGPathElement>('.arch__edge').forEach((edge) => {
+          const touches =
+            id !== null && (edge.dataset.from === id || edge.dataset.to === id);
+          edge.toggleAttribute('data-active', touches);
+        });
+      };
+
+      svg.querySelectorAll<SVGGElement>('[data-node]').forEach((node) => {
+        const id = node.dataset.node!;
+        node.addEventListener('pointerenter', () => setActive(id));
+        node.addEventListener('pointerleave', () => setActive(null));
+        node.addEventListener('click', () => {
+          legend
+            .querySelector<HTMLButtonElement>(`[data-arch-focus="${id}"]`)
+            ?.scrollIntoView({ block: 'nearest' });
+          setActive(id);
+        });
+      });
+
+      legend.querySelectorAll<HTMLButtonElement>('[data-arch-focus]').forEach((btn) => {
+        const id = btn.dataset.archFocus!;
+        btn.addEventListener('pointerenter', () => setActive(id));
+        btn.addEventListener('pointerleave', () => setActive(null));
+        btn.addEventListener('focus', () => setActive(id));
+        btn.addEventListener('blur', () => setActive(null));
+        btn.addEventListener('click', () => setActive(id));
+      });
+    });
+  }
+  wireArch();
+  document.addEventListener('astro:page-load', wireArch);
+</script>

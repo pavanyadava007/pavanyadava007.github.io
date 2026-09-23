@@ -1,0 +1,232 @@
+---
+import { scaleLinear } from 'd3-scale';
+
+interface Stage {
+  name: string;
+  ms: number;
+  note?: string;
+}
+
+interface Props {
+  mode?: 'stages' | 'variants';
+  title: string;
+  caption: string;
+  total: string;
+  hardware: string;
+  stages: Stage[];
+}
+
+const { mode = 'stages', title, caption, total, hardware, stages } = Astro.props;
+
+/**
+ * `stages` stacks the bars, because the steps are consecutive parts of one pass.
+ * `variants` draws them from a common baseline, because they are alternatives.
+ * Geometry is computed here, at build time - the chart needs no JS to be readable.
+ */
+const sum = stages.reduce((s, x) => s + x.ms, 0);
+const max = Math.max(...stages.map((s) => s.ms));
+const domainMax = mode === 'stages' ? sum : max;
+const x = scaleLinear().domain([0, domainMax]).range([0, 100]);
+
+let cursor = 0;
+const bars = stages.map((stage) => {
+  const width = x(stage.ms);
+  const offset = mode === 'stages' ? x(cursor) : 0;
+  cursor += stage.ms;
+  const share = (stage.ms / (mode === 'stages' ? sum : max)) * 100;
+  return { ...stage, width, offset, share };
+});
+
+const ticks = x.ticks(5);
+const unit = mode === 'stages' ? 'of the pass' : 'of the slowest runtime';
+---
+
+<figure class="wf" id="latency">
+  <figcaption class="wf__head">
+    <h2 class="wf__title">{title}</h2>
+    <p class="wf__total mono">{total}</p>
+    <p class="wf__hw">{hardware}</p>
+  </figcaption>
+
+  <div class="wf__axis mono" aria-hidden="true">
+    {ticks.map((t) => <span style={`--at:${x(t)}%`}>{t} ms</span>)}
+  </div>
+
+  <ul class="wf__bars">
+    {
+      bars.map((bar) => (
+        <li class="wf__row">
+          <span class="wf__name">{bar.name}</span>
+          <span class="wf__track">
+            <span
+              class="wf__bar"
+              style={`--offset:${bar.offset}%; --width:${bar.width}%`}
+              data-share={`${bar.share.toFixed(0)}% ${unit}`}
+            />
+          </span>
+          <span class="wf__ms mono">{bar.ms} ms</span>
+          {bar.note && <span class="wf__note">{bar.note}</span>}
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="wf__caption">{caption}</p>
+
+  <details class="wf__table">
+    <summary>Table view</summary>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">{mode === 'stages' ? 'Stage' : 'Runtime'}</th>
+          <th scope="col">Median ms</th>
+          <th scope="col">Share</th>
+          <th scope="col">Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          bars.map((bar) => (
+            <tr>
+              <th scope="row">{bar.name}</th>
+              <td class="mono">{bar.ms}</td>
+              <td class="mono">{bar.share.toFixed(0)}%</td>
+              <td>{bar.note ?? '—'}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </details>
+</figure>
+
+<style>
+  .wf {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.4rem 1.4rem 1.2rem;
+    scroll-margin-top: 6rem;
+  }
+  .wf__head {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .wf__title {
+    font-size: var(--t-h3);
+  }
+  .wf__total {
+    color: var(--accent);
+    font-size: 1.05rem;
+  }
+  .wf__hw {
+    color: var(--fg-dim);
+    font-size: var(--t-xs);
+  }
+  .wf__axis {
+    position: relative;
+    height: 1.4rem;
+    margin-top: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+  }
+  .wf__axis span {
+    position: absolute;
+    left: var(--at);
+    bottom: 0.2rem;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .wf__bars {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .wf__row {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 9rem) minmax(0, 1fr) 4.5rem;
+    align-items: center;
+    gap: 0.4rem 0.85rem;
+  }
+  .wf__name {
+    font-size: var(--t-sm);
+    color: var(--fg);
+  }
+  .wf__track {
+    position: relative;
+    height: 1.35rem;
+    background: var(--bg-sunk);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .wf__bar {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: var(--offset);
+    width: var(--width);
+    min-width: 2px;
+    background: linear-gradient(
+      to right,
+      var(--accent),
+      color-mix(in srgb, var(--accent) 62%, transparent)
+    );
+    border-radius: 3px;
+  }
+  .wf__ms {
+    font-size: var(--t-sm);
+    color: var(--fg-muted);
+    text-align: right;
+  }
+  .wf__note {
+    grid-column: 2 / -1;
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+  }
+  @media (max-width: 600px) {
+    .wf__row {
+      grid-template-columns: minmax(0, 1fr) 4.5rem;
+    }
+    .wf__name {
+      grid-column: 1 / -1;
+    }
+    .wf__note {
+      grid-column: 1 / -1;
+    }
+  }
+  .wf__caption {
+    margin-top: 1.1rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 68ch;
+  }
+  .wf__table {
+    margin-top: 0.9rem;
+  }
+  .wf__table summary {
+    font-size: var(--t-sm);
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+  .wf__table table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 0.75rem;
+    font-size: var(--t-xs);
+  }
+  .wf__table th,
+  .wf__table td {
+    text-align: left;
+    padding: 0.4rem 0.8rem 0.4rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--fg-muted);
+    font-weight: 400;
+  }
+  .wf__table thead th {
+    color: var(--fg-dim);
+    font-weight: 600;
+  }
+</style>

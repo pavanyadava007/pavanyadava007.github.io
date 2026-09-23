@@ -75,6 +75,18 @@ links:
   results: https://github.com/pavanyadava007/offroad-bevfusion/blob/main/docs/REPORT.md
 ---
 
+import ArchDiagram from '~/components/ArchDiagram.astro';
+import LatencyWaterfall from '~/components/charts/LatencyWaterfall.astro';
+import Video from '~/components/Video.astro';
+
+<Video
+  name="showcase"
+  width="960"
+  height="364"
+  caption="Four replay segments: urban perception with the VLA interface; a hazard drive where a Qwen2.5-VL LoRA proposes an action and a deterministic fail-safe rule escalates APPROACH → WAIT → STOP as a pedestrian enters the corridor, with the VLA grounded on ground-truth perception; a night/wet scene; and GOOSE off-road 8-class BEV segmentation in rain."
+  description="A screen recording of four driving scenes with fused 3D boxes and BEV segmentation drawn over them, alongside the action the safety rule selects."
+/>
+
 ## Problem & constraints
 
 Off-highway perception has the same sensor set as automotive and almost none of the data. The
@@ -86,6 +98,10 @@ drops out, what the export path costs - and to make the deployment real rather t
 The export constraint drove the architecture: static-shape ONNX at opset 17 with **no custom
 TensorRT plugins**, so the engine builds on a stock TensorRT install and the ROS 2 node does not
 depend on a patched runtime.
+
+<ArchDiagram {...frontmatter.arch} />
+
+<LatencyWaterfall {...frontmatter.latency} />
 
 ## Results
 
@@ -109,6 +125,15 @@ deltas are reported with the dataset size attached.
 
 On GOOSE, zero-shot drivable-area IoU is **0.021** and fine-tuning takes it to **0.348** - a
 plain statement that a nuScenes-trained BEV head transfers almost nothing to off-road terrain.
+
+<Video
+  name="rviz-replay"
+  width="960"
+  height="600"
+  loop
+  caption="rviz2 replay of the deployed ROS 2 node, recorded in the ros:humble container on the L4 FP16 engine at 11.5 ms/frame."
+  description="An rviz2 window replaying a nuScenes sequence with 3D bounding boxes and a BEV segmentation raster produced by the deployed C++ node."
+/>
 
 {/* TODO(media): the before/after CompareSlider for GOOSE zero-shot vs fine-tuned needs a matched
     pair of rviz screenshots of the same frame. Only the fine-tuned replay GIF exists today, so the

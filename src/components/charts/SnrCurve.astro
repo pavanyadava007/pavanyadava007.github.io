@@ -1,0 +1,340 @@
+---
+import { scaleLinear } from 'd3-scale';
+import { line } from 'd3-shape';
+
+export interface SnrSeries {
+  name: string;
+  note: string;
+  color: string;
+  points: { snr: number; acc: number }[];
+}
+
+interface Props {
+  title: string;
+  subtitle: string;
+  caption: string;
+  series: SnrSeries[];
+  source?: string;
+}
+
+const { title, subtitle, caption, series, source } = Astro.props;
+
+const W = 720;
+const H = 380;
+const M = { top: 20, right: 24, bottom: 52, left: 54 };
+
+const allSnr = series.flatMap((s) => s.points.map((p) => p.snr));
+const x = scaleLinear()
+  .domain([Math.min(...allSnr), Math.max(...allSnr)])
+  .range([M.left, W - M.right]);
+const y = scaleLinear().domain([0, 100]).range([H - M.bottom, M.top]);
+
+const path = line<{ snr: number; acc: number }>()
+  .x((p) => x(p.snr))
+  .y((p) => y(p.acc));
+
+const drawn = series.map((s) => ({
+  ...s,
+  d: path(s.points) ?? '',
+  dots: s.points.map((p) => ({ ...p, cx: x(p.snr), cy: y(p.acc) })),
+}));
+
+const snrTicks = [...new Set(allSnr)].sort((a, b) => a - b);
+---
+
+<figure class="snr" id="snr">
+  <figcaption class="snr__head">
+    <h3 class="snr__title">{title}</h3>
+    <p class="snr__sub">{subtitle}</p>
+  </figcaption>
+
+  <div class="snr__legend">
+    {
+      drawn.map((s) => (
+        <span>
+          <i style={`background:${s.color}`} />
+          {s.name}
+          <em>{s.note}</em>
+        </span>
+      ))
+    }
+  </div>
+
+  <label class="snr__brush">
+    <span>Lowest SNR shown: <output class="mono" data-snr-out>{snrTicks[0]} dB</output></span>
+    <input
+      type="range"
+      min={snrTicks[0]}
+      max={snrTicks[snrTicks.length - 2]}
+      step="1"
+      value={snrTicks[0]}
+      data-snr-brush
+      aria-label="Lowest signal-to-noise ratio shown on the chart"
+    />
+  </label>
+
+  <div class="snr__scroll">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`${title}. ${subtitle} The same values are in the table below.`}
+      data-snr
+      data-domain-min={x.domain()[0]}
+      data-domain-max={x.domain()[1]}
+      data-range-min={x.range()[0]}
+      data-range-max={x.range()[1]}
+    >
+      <g class="snr__grid">
+        {y.ticks(5).map((t) => <line x1={M.left} x2={W - M.right} y1={y(t)} y2={y(t)} />)}
+      </g>
+      <rect
+        class="snr__mask"
+        x={M.left}
+        y={M.top}
+        width="0"
+        height={H - M.bottom - M.top}
+        data-snr-mask></rect>
+      <g class="snr__axis">
+        {
+          y.ticks(5).map((t) => (
+            <text x={M.left - 9} y={y(t) + 4} text-anchor="end">
+              {t}%
+            </text>
+          ))
+        }
+        {
+          snrTicks.map((t) => (
+            <text x={x(t)} y={H - M.bottom + 19} text-anchor="middle">
+              {t}
+            </text>
+          ))
+        }
+        <text class="snr__axis-title" x={(W + M.left) / 2} y={H - 12} text-anchor="middle">
+          SNR (dB)
+        </text>
+      </g>
+      {
+        drawn.map((s) => (
+          <g class="snr__series">
+            <path d={s.d} style={`stroke:${s.color}`} />
+            {s.dots.map((p) => (
+              <circle cx={p.cx} cy={p.cy} r="3.6" style={`fill:${s.color}`}>
+                <title>
+                  {s.name} at {p.snr} dB: {p.acc}%
+                </title>
+              </circle>
+            ))}
+          </g>
+        ))
+      }
+    </svg>
+  </div>
+
+  <p class="snr__caption">{caption}</p>
+
+  <details class="snr__table">
+    <summary>Table view</summary>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">SNR (dB)</th>
+          {drawn.map((s) => <th scope="col">{s.name}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {
+          snrTicks.map((t) => (
+            <tr>
+              <th scope="row" class="mono">
+                {t}
+              </th>
+              {drawn.map((s) => (
+                <td class="mono">{s.points.find((p) => p.snr === t)?.acc ?? '—'}%</td>
+              ))}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </details>
+
+  {
+    source && (
+      <p class="snr__source">
+        <a href={source} rel="noopener">
+          Source measurements →
+        </a>
+      </p>
+    )
+  }
+</figure>
+
+<style>
+  .snr {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.4rem 1.4rem 1.2rem;
+    scroll-margin-top: 6rem;
+  }
+  .snr__title {
+    font-size: var(--t-h3);
+  }
+  .snr__sub {
+    margin-top: 0.35rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 68ch;
+  }
+  .snr__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1rem;
+    font-size: var(--t-xs);
+    color: var(--fg-muted);
+  }
+  .snr__legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .snr__legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .snr__legend em {
+    color: var(--fg-dim);
+    font-style: normal;
+  }
+  .snr__brush {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-top: 1rem;
+    font-size: var(--t-xs);
+    color: var(--fg-muted);
+  }
+  .snr__brush input {
+    flex: 1;
+    min-width: 12rem;
+    accent-color: var(--accent);
+  }
+  .snr__scroll {
+    margin-top: 0.75rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .snr svg {
+    display: block;
+    width: 100%;
+    min-width: 520px;
+    height: auto;
+    font-family: var(--font-ui-stack);
+  }
+  .snr__grid line {
+    stroke: var(--line);
+  }
+  .snr__mask {
+    fill: var(--bg);
+    opacity: 0.82;
+    transition: width 160ms var(--ease);
+  }
+  .snr__axis text {
+    fill: var(--fg-dim);
+    font-size: 11.5px;
+  }
+  .snr__axis-title {
+    fill: var(--fg-muted);
+    font-size: 12px;
+  }
+  .snr__series path {
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+  }
+  .snr__series circle {
+    stroke: var(--bg-elev);
+    stroke-width: 1.5;
+  }
+  .snr__caption {
+    margin-top: 1rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 68ch;
+  }
+  .snr__table {
+    margin-top: 1rem;
+  }
+  .snr__table summary {
+    font-size: var(--t-sm);
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+  .snr__table table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 0.7rem;
+    font-size: var(--t-xs);
+  }
+  .snr__table th,
+  .snr__table td {
+    text-align: left;
+    padding: 0.4rem 0.8rem 0.4rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--fg-muted);
+    font-weight: 400;
+  }
+  .snr__table thead th {
+    color: var(--fg-dim);
+    font-weight: 600;
+  }
+  .snr__source {
+    margin-top: 0.8rem;
+    font-size: var(--t-xs);
+  }
+  .snr__source a {
+    color: var(--accent);
+  }
+</style>
+
+<script>
+  /** The brush masks the low-SNR region rather than rescaling, so the shape never lies. */
+  function wireSnr() {
+    document.querySelectorAll<HTMLElement>('.snr').forEach((fig) => {
+      if (fig.dataset.wired) return;
+      fig.dataset.wired = '1';
+      const input = fig.querySelector<HTMLInputElement>('[data-snr-brush]');
+      const mask = fig.querySelector<SVGRectElement>('[data-snr-mask]');
+      const out = fig.querySelector<HTMLOutputElement>('[data-snr-out]');
+      const svg = fig.querySelector<SVGSVGElement>('[data-snr]');
+      if (!input || !mask || !svg) return;
+
+      const dots = [...svg.querySelectorAll<SVGCircleElement>('.snr__series circle')];
+      // Re-create the build-time x scale from the data attributes, so the mask edge
+      // lands exactly on the brushed SNR value rather than on a proportion of the box.
+      const d0 = Number(svg.dataset.domainMin);
+      const d1 = Number(svg.dataset.domainMax);
+      const r0 = Number(svg.dataset.rangeMin);
+      const r1 = Number(svg.dataset.rangeMax);
+      const toX = (v: number) => r0 + ((v - d0) / (d1 - d0)) * (r1 - r0);
+
+      const apply = () => {
+        const v = Number(input.value);
+        const edge = toX(v);
+        mask.setAttribute('width', String(Math.max(0, edge - r0)));
+        if (out) out.textContent = `${v} dB`;
+        dots.forEach((d) => {
+          d.style.opacity = Number(d.getAttribute('cx')) < edge - 0.5 ? '0.22' : '1';
+        });
+      };
+      input.addEventListener('input', apply);
+      apply();
+    });
+  }
+  wireSnr();
+  document.addEventListener('astro:page-load', wireSnr);
+</script>

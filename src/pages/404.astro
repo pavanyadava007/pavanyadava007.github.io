@@ -1,0 +1,38 @@
+---
+import Base from '~/layouts/Base.astro';
+import { site } from '~/lib/site';
+---
+
+<Base title="Page not found" description="That page does not exist on this site." path="/404">
+  <div class="wrap nf">
+    <p class="kicker">404</p>
+    <h1 class="nf__title">No signal on that bearing</h1>
+    <p class="lede">
+      That page does not exist. The work is all reachable from the index, and ⌘K opens a
+      jump list from anywhere.
+    </p>
+    <div class="nf__actions">
+      <a class="btn btn--primary" href="/work">All work</a>
+      <a class="btn" href="/">Home</a>
+      <a class="btn" href="/lab">Lab</a>
+      <a class="btn" href={`mailto:${site.email}`}>Email me</a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .nf {
+    padding-block: clamp(4rem, 18vh, 9rem) 6rem;
+    max-width: 44rem;
+  }
+  .nf__title {
+    font-size: var(--t-h1);
+    margin-block: 0.7rem 1rem;
+  }
+  .nf__actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+</style>

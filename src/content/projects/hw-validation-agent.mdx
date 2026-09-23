@@ -47,6 +47,8 @@ links:
   code: https://github.com/pavanyadava007/nxp-hw-validation-agent
 ---
 
+import ArchDiagram from '~/components/ArchDiagram.astro';
+
 ## Problem & constraints
 
 Silicon validation labs already have an anomaly detector: the spec limit. Any proposal to replace
@@ -61,6 +63,8 @@ credible as that grouping.
 The second constraint is that an agent with database access in a validation lab is a liability
 unless it is boxed in. All 14 tools are read-only, guarded at the SQL layer, and logged, and CI
 runs the suite against both SQLite and a live PostgreSQL so the guard is tested where it will run.
+
+<ArchDiagram {...frontmatter.arch} />
 
 ## Results
 

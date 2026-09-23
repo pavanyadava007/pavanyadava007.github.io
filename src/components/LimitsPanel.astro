@@ -1,0 +1,95 @@
+---
+import { LIMIT_LABELS } from '~/lib/site';
+
+interface Limit {
+  kind: 'failed' | 'not-measured' | 'small-n' | 'sim-only' | 'other';
+  text: string;
+}
+
+interface Props {
+  limits: Limit[];
+  heading?: string;
+}
+
+const { limits, heading = 'Honest limits' } = Astro.props;
+
+/** Stable order, worst first, so the panel always reads the same way. */
+const ORDER: Limit['kind'][] = ['failed', 'sim-only', 'small-n', 'not-measured', 'other'];
+const sorted = [...limits].sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
+---
+
+<section class="limits" id="limits" aria-labelledby="limits-heading">
+  <h2 class="limits__heading" id="limits-heading">{heading}</h2>
+  <p class="limits__intro">
+    What failed, what could not be measured, and what the numbers on this page do not cover.
+    Always expanded, because the point of it is that you read it.
+  </p>
+  <ul class="limits__list">
+    {
+      sorted.map((limit) => (
+        <li class="limits__item" data-kind={limit.kind}>
+          <span class="limits__tag mono">{LIMIT_LABELS[limit.kind]}</span>
+          <p>{limit.text}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .limits {
+    border: 1px solid var(--accent-2);
+    border-left-width: 3px;
+    border-radius: var(--radius);
+    background: var(--accent-2-soft);
+    padding: 1.5rem 1.5rem 1.35rem;
+    scroll-margin-top: 6rem;
+  }
+  .limits__heading {
+    font-size: var(--t-h3);
+    color: var(--fg);
+  }
+  .limits__intro {
+    margin-top: 0.4rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    max-width: 62ch;
+  }
+  .limits__list {
+    list-style: none;
+    padding: 0;
+    margin: 1.35rem 0 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .limits__item {
+    display: grid;
+    gap: 0.25rem 1.1rem;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--accent-2) 30%, transparent);
+  }
+  .limits__item:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+  @media (min-width: 720px) {
+    .limits__item {
+      grid-template-columns: 10.5rem minmax(0, 1fr);
+    }
+  }
+  .limits__tag {
+    font-size: var(--t-xs);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    padding-top: 0.15rem;
+  }
+  .limits__item[data-kind='failed'] .limits__tag {
+    color: var(--fail);
+  }
+  .limits__item p {
+    color: var(--fg);
+    font-size: var(--t-sm);
+  }
+</style>

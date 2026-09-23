@@ -56,6 +56,22 @@ links:
   modelCard: https://huggingface.co/pavanyadava07/makerspace-yolo11n
 ---
 
+import ArchDiagram from '~/components/ArchDiagram.astro';
+import Shots from '~/components/Shots.astro';
+
+<Shots
+  shots={[
+    {
+      src: 'mrs-live.png',
+      caption: 'Live feed: YOLO11n detections over a WebSocket, with the material class and bin route for each item.',
+    },
+    {
+      src: 'mrs-ask.png',
+      caption: 'Ask: cited answers from the local corpus, plus a live inventory snapshot for stock questions.',
+    },
+  ]}
+/>
+
 ## Problem & constraints
 
 A makerspace throws away parts that are still good because nobody can tell, at the bin, what a
@@ -66,6 +82,8 @@ rules are written in German and the people reading them are not all German speak
 That rules out the easy version. A local 8B model has a much smaller margin for retrieval error
 than a frontier API does, so retrieval quality is the whole system - and a wrong answer about a
 hazardous material is worse than no answer, which makes refusal a feature rather than a failure.
+
+<ArchDiagram {...frontmatter.arch} />
 
 ## Results
 

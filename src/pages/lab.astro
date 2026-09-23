@@ -1,0 +1,183 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '~/layouts/Base.astro';
+import ProjectCard from '~/components/ProjectCard.astro';
+import { LIMIT_LABELS } from '~/lib/site';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const bench = projects.filter((p) => p.data.lab);
+
+/**
+ * The negative-results log is assembled from the projects themselves: every limit typed
+ * `failed` across the whole collection, in one place. It cannot drift from the case
+ * studies because it is the same data.
+ */
+const negatives = projects.flatMap((p) =>
+  p.data.limits
+    .filter((l) => l.kind === 'failed')
+    .map((l) => ({ project: p.data.title, slug: p.id, text: l.text })),
+);
+
+const otherCaveats = projects.flatMap((p) =>
+  p.data.limits
+    .filter((l) => l.kind !== 'failed' && l.kind !== 'other')
+    .map((l) => ({ project: p.data.title, slug: p.id, kind: l.kind, text: l.text })),
+);
+---
+
+<Base
+  title="Lab"
+  description="Also on the bench, plus every experiment across these projects that failed, did not help, or could not be measured - collected in one place."
+  path="/lab"
+>
+  <div class="wrap lab">
+    <header class="lab__head">
+      <p class="kicker">Lab</p>
+      <h1 class="lab__title">Negative results, collected</h1>
+      <p class="lede">
+        Every case study carries its own limits panel. This page pulls them all together,
+        because the experiments that did not work are the ones that say most about how the
+        successful ones were checked.
+      </p>
+    </header>
+
+    <section class="lab__section" aria-labelledby="failed-heading">
+      <h2 id="failed-heading" class="lab__h2">
+        What failed or did not help
+        <span class="mono lab__count">{negatives.length}</span>
+      </h2>
+      <ol class="lab__log">
+        {
+          negatives.map((n) => (
+            <li>
+              <a class="lab__log-project mono" href={`/work/${n.slug}`}>
+                {n.project}
+              </a>
+              <p>{n.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="lab__section" aria-labelledby="caveats-heading">
+      <h2 id="caveats-heading" class="lab__h2">
+        What is not measured, or rests on a small n
+        <span class="mono lab__count">{otherCaveats.length}</span>
+      </h2>
+      <ol class="lab__log lab__log--muted">
+        {
+          otherCaveats.map((n) => (
+            <li>
+              <a class="lab__log-project mono" href={`/work/${n.slug}`}>
+                {n.project}
+              </a>
+              <p>
+                <span class="lab__kind">{LIMIT_LABELS[n.kind]}</span>
+                {n.text}
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="lab__section" aria-labelledby="bench-heading">
+      <h2 id="bench-heading" class="lab__h2">Also on the bench</h2>
+      <p class="lab__intro">
+        Smaller or in-progress work. Nothing here claims a benchmark it has not run.
+      </p>
+      <div class="lab__cards">
+        {bench.map((project) => <ProjectCard project={project} layout="grid" />)}
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .lab {
+    padding-block: clamp(2.5rem, 7vh, 4rem) 3rem;
+  }
+  .lab__title {
+    font-size: var(--t-h1);
+    margin-block: 0.7rem 1rem;
+  }
+  .lab__section {
+    margin-top: 3.5rem;
+  }
+  .lab__h2 {
+    font-size: var(--t-h2);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .lab__count {
+    font-size: 1rem;
+    color: var(--fg-dim);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.05rem 0.55rem;
+  }
+  .lab__intro {
+    margin-top: 0.6rem;
+    color: var(--fg-muted);
+    max-width: 62ch;
+  }
+  .lab__log {
+    list-style: none;
+    counter-reset: entry;
+    padding: 0;
+    margin: 1.75rem 0 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--fail);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .lab__log--muted {
+    border-left-color: var(--accent-2);
+  }
+  .lab__log li {
+    background: var(--bg-elev);
+    padding: 1rem 1.15rem;
+    display: grid;
+    gap: 0.3rem 1.25rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 820px) {
+    .lab__log li {
+      grid-template-columns: 13rem minmax(0, 1fr);
+    }
+  }
+  .lab__log-project {
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+    text-decoration: none;
+  }
+  .lab__log-project:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .lab__log p {
+    color: var(--fg);
+    font-size: var(--t-sm);
+  }
+  .lab__kind {
+    display: inline-block;
+    margin-inline-end: 0.5rem;
+    font-family: var(--font-mono-stack);
+    font-size: var(--t-xs);
+    color: var(--accent-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .lab__cards {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  }
+</style>

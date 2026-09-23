@@ -1,0 +1,548 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import { Image } from 'astro:assets';
+import Base from './Base.astro';
+import LimitsPanel from '~/components/LimitsPanel.astro';
+import DemoFacade from '~/components/DemoFacade.astro';
+import { STATUS_LABELS, CATEGORY_LABELS, site } from '~/lib/site';
+import { provenance } from '~/lib/format';
+import { image, alt as altFor } from '~/lib/media';
+import { creativeWorkJsonLd, breadcrumbJsonLd } from '~/lib/seo';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  headings: MarkdownHeading[];
+  prev: CollectionEntry<'projects'> | null;
+  next: CollectionEntry<'projects'> | null;
+}
+
+const { project, headings, prev, next } = Astro.props;
+const { data, id } = project;
+const path = `/work/${id}`;
+
+/**
+ * The rail is built in the case study's canonical order. The architecture and latency
+ * anchors come from components inside the MDX, so they are slotted in after the
+ * "Problem" heading - which is where every project places them.
+ */
+const toc: { id: string; text: string }[] = [{ id: 'tldr', text: 'TL;DR' }];
+for (const h of headings.filter((h) => h.depth === 2)) {
+  toc.push({ id: h.slug, text: h.text });
+  if (/^problem/i.test(h.text)) {
+    if (data.arch) toc.push({ id: 'architecture', text: 'System architecture' });
+    if (data.latency) toc.push({ id: 'latency', text: 'Pipeline latency' });
+  }
+}
+toc.push({ id: 'limits', text: 'Honest limits' });
+if (data.links.demo) toc.push({ id: 'demo', text: 'Live demo' });
+toc.push({ id: 'links', text: 'Links' });
+
+const linkList = [
+  ['code', 'Code', data.links.code],
+  ['results', 'Every measured number', data.links.results],
+  ['modelCard', 'Model card', data.links.modelCard],
+  ['hazard', 'Hazard analysis', data.links.hazard],
+  ['demo', 'Live demo', data.links.demo],
+].filter(([, , href]) => href) as [string, string, string][];
+
+const poster = data.poster ? image(data.poster) : null;
+
+const jsonLd = [
+  creativeWorkJsonLd({
+    title: data.title,
+    description: data.description,
+    path,
+    code: data.links.code,
+    demo: data.links.demo,
+  }),
+  breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Work', path: '/work' },
+    { name: data.title, path },
+  ]),
+];
+---
+
+<Base
+  title={data.title}
+  description={data.description}
+  path={path}
+  type="article"
+  image={`/og/work/${id}.png`}
+  jsonLd={jsonLd}
+>
+  <article class="cs" data-pagefind-body>
+    <header class="cs__header bev-grid">
+      <div class="wrap">
+        <nav class="cs__crumbs" aria-label="Breadcrumb">
+          <a href="/work">Work</a>
+          <span aria-hidden="true">/</span>
+          <span>{data.title}</span>
+        </nav>
+
+        <p class="kicker">{data.kicker}</p>
+        <h1 class="cs__title" transition:name={`title-${id}`}>{data.title}</h1>
+        <p class="cs__claim lede">{data.claim}</p>
+
+        <ul class="cs__tags">
+          <li class={`cs__status cs__status--${data.status}`}>{STATUS_LABELS[data.status]}</li>
+          {data.categories.map((c) => <li class="chip">{CATEGORY_LABELS[c]}</li>)}
+        </ul>
+
+        {
+          linkList.length > 0 && (
+            <div class="cs__actions">
+              {linkList.map(([key, label, href], i) => (
+                <a
+                  class:list={['btn', i === 0 && 'btn--primary']}
+                  href={href}
+                  rel="noopener"
+                  data-link={key}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </header>
+
+    {
+      poster && (
+        <div class="wrap">
+          <figure class="cs__poster">
+            <Image
+              src={poster}
+              alt={altFor(data.poster!)}
+              widths={[640, 960, 1280, 1600]}
+              sizes="(min-width: 1240px) 1140px, 94vw"
+              formats={['avif', 'webp']}
+              loading="eager"
+              transition:name={`poster-${id}`}
+            />
+          </figure>
+        </div>
+      )
+    }
+
+    <div class="wrap cs__body">
+      <nav class="cs__rail" aria-label="On this page">
+        <p class="cs__rail-title mono">On this page</p>
+        <ol data-scrollspy>
+          {
+            toc.map((t) => (
+              <li>
+                <a href={`#${t.id}`} data-spy-link={t.id}>
+                  {t.text}
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <div class="cs__content">
+        <section class="cs__tldr" id="tldr" aria-labelledby="tldr-heading">
+          <h2 class="sr-only" id="tldr-heading">TL;DR</h2>
+          {data.tldr && <p class="cs__lede lede">{data.tldr}</p>}
+          {
+            data.metrics.length > 0 && (
+              <ul class="cs__metrics">
+                {data.metrics.slice(0, 4).map((m) => (
+                  <li class="cs__metric">
+                    <p class="cs__metric-value mono">{m.value}</p>
+                    <p class="cs__metric-label">{m.label}</p>
+                    <ul class="cs__metric-prov">
+                      {provenance(m).map((p) => (
+                        <li>{p}</li>
+                      ))}
+                    </ul>
+                    {m.source && (
+                      <a class="cs__metric-src" href={m.source} rel="noopener">
+                        Source →
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </section>
+
+        <div class="prose cs__prose">
+          <slot />
+        </div>
+
+        <LimitsPanel limits={data.limits} />
+
+        {
+          data.links.demo && (
+            <DemoFacade src={data.links.demo} title={`${data.title} — interactive demo`} />
+          )
+        }
+
+        <section class="cs__links" id="links" aria-labelledby="links-heading">
+          <h2 id="links-heading">Links</h2>
+          <ul>
+            {
+              linkList.map(([, label, href]) => (
+                <li>
+                  <a href={href} rel="noopener">
+                    {label}
+                  </a>
+                  <span class="cs__links-host">{new URL(href).host}</span>
+                </li>
+              ))
+            }
+            <li>
+              <a href={site.cv} download>Download CV (PDF)</a>
+              <span class="cs__links-host">pavanyadava007.github.io</span>
+            </li>
+          </ul>
+        </section>
+
+        <nav class="cs__nav" aria-label="Other projects">
+          {
+            prev ? (
+              <a class="cs__nav-link" href={`/work/${prev.id}`} rel="prev">
+                <span class="mono">← Previous</span>
+                <strong>{prev.data.title}</strong>
+              </a>
+            ) : (
+              <span />
+            )
+          }
+          {
+            next && (
+              <a class="cs__nav-link cs__nav-link--next" href={`/work/${next.id}`} rel="next">
+                <span class="mono">Next →</span>
+                <strong>{next.data.title}</strong>
+              </a>
+            )
+          }
+        </nav>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .cs__header {
+    padding-block: clamp(2.5rem, 7vh, 4.5rem) 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .cs__crumbs {
+    display: flex;
+    gap: 0.5rem;
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+    margin-bottom: 1.5rem;
+  }
+  .cs__crumbs a {
+    color: var(--fg-muted);
+  }
+  .cs__title {
+    font-size: var(--t-h1);
+    margin-top: 0.7rem;
+  }
+  .cs__claim {
+    margin-top: 0.9rem;
+    max-width: 58ch;
+  }
+  .cs__tags {
+    list-style: none;
+    padding: 0;
+    margin: 1.4rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .cs__status {
+    font-family: var(--font-mono-stack);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    color: var(--fg-dim);
+  }
+  .cs__status--live {
+    color: var(--ok);
+    border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+  }
+  .cs__status--new {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .cs__status--private {
+    color: var(--accent-2);
+    border-color: color-mix(in srgb, var(--accent-2) 45%, transparent);
+  }
+  .cs__actions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .cs__poster {
+    margin: 2rem 0 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-sunk);
+  }
+  .cs__poster :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  .cs__body {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: 3rem 1rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 1000px) {
+    .cs__body {
+      grid-template-columns: 14rem minmax(0, 1fr);
+      gap: 3.5rem;
+    }
+  }
+
+  .cs__rail {
+    align-self: start;
+  }
+  @media (min-width: 1000px) {
+    .cs__rail {
+      position: sticky;
+      top: 5rem;
+      max-height: calc(100vh - 7rem);
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+  }
+  .cs__rail-title {
+    font-size: var(--t-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin-bottom: 0.7rem;
+  }
+  .cs__rail ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.1rem;
+    border-left: 1px solid var(--line);
+  }
+  .cs__rail a {
+    display: block;
+    padding: 0.35rem 0 0.35rem 0.85rem;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    font-size: var(--t-sm);
+    color: var(--fg-muted);
+    text-decoration: none;
+    transition: color 200ms var(--ease);
+  }
+  .cs__rail a:hover {
+    color: var(--fg);
+  }
+  .cs__rail a[aria-current='true'] {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .cs__content {
+    display: grid;
+    gap: 3rem;
+    min-width: 0;
+  }
+  .cs__tldr {
+    scroll-margin-top: 6rem;
+  }
+  .cs__lede {
+    font-size: 1.15rem;
+    color: var(--fg);
+    max-width: 68ch;
+  }
+  .cs__metrics {
+    list-style: none;
+    padding: 0;
+    margin: 1.75rem 0 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    /* Explicit counts: four cards auto-fitting to three columns leave a dead cell. */
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) {
+    .cs__metrics {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1240px) {
+    .cs__metrics {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .cs__metric {
+    background: var(--bg-elev);
+    padding: 1.1rem 1.1rem 1rem;
+  }
+  .cs__metric-value {
+    font-size: 1.35rem;
+    color: var(--accent);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .cs__metric-label {
+    margin-top: 0.5rem;
+    font-size: var(--t-sm);
+    color: var(--fg);
+  }
+  .cs__metric-prov {
+    list-style: none;
+    padding: 0;
+    margin: 0.55rem 0 0;
+    display: grid;
+    gap: 0.2rem;
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+  }
+  .cs__metric-src {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-size: var(--t-xs);
+    color: var(--accent);
+  }
+
+  .cs__prose {
+    max-width: none;
+  }
+  .cs__prose :global(h2:first-child) {
+    margin-top: 0;
+  }
+  .cs__prose :global(figure) {
+    margin-block: 2.5rem;
+  }
+
+  .cs__links {
+    scroll-margin-top: 6rem;
+  }
+  .cs__links h2 {
+    font-size: var(--t-h3);
+  }
+  .cs__links ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .cs__links li {
+    background: var(--bg-elev);
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    align-items: baseline;
+  }
+  .cs__links a {
+    color: var(--accent);
+    font-size: var(--t-sm);
+  }
+  .cs__links-host {
+    margin-inline-start: auto;
+    font-family: var(--font-mono-stack);
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+  }
+
+  .cs__nav {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .cs__nav-link {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    text-decoration: none;
+    transition: border-color 200ms var(--ease);
+  }
+  .cs__nav-link:hover {
+    border-color: var(--accent);
+  }
+  .cs__nav-link span {
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+  }
+  .cs__nav-link strong {
+    font-size: var(--t-sm);
+    color: var(--fg);
+  }
+  .cs__nav-link--next {
+    text-align: right;
+  }
+</style>
+
+<script>
+  /** Scrollspy on the sticky rail. */
+  function wireSpy() {
+    const rail = document.querySelector<HTMLElement>('[data-scrollspy]');
+    if (!rail || rail.dataset.wired) return;
+    rail.dataset.wired = '1';
+
+    const links = new Map(
+      [...rail.querySelectorAll<HTMLAnchorElement>('[data-spy-link]')].map((a) => [
+        a.dataset.spyLink!,
+        a,
+      ]),
+    );
+    const targets = [...links.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (!targets.length) return;
+
+    let current = '';
+    const setCurrent = (id: string) => {
+      if (id === current) return;
+      current = id;
+      links.forEach((a, key) =>
+        key === id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current'),
+      );
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setCurrent(visible[0].target.id);
+      },
+      // Only the band just under the sticky nav counts as "here".
+      { rootMargin: '-12% 0px -72% 0px', threshold: 0 },
+    );
+    targets.forEach((t) => io.observe(t));
+  }
+  wireSpy();
+  document.addEventListener('astro:page-load', wireSpy);
+</script>
