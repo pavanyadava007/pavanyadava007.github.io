@@ -1,0 +1,222 @@
+---
+import { PIPELINE_STAGES } from '~/lib/bev-scene';
+import { site } from '~/lib/site';
+---
+
+<section class="hero bev-grid" data-hero>
+  {/* The poster is the LCP element. The 3D scene, if it loads at all, draws on top of it. */}
+  <div class="hero__scene" data-hero-scene>
+    <picture>
+      <source
+        srcset="/hero-poster-sm.avif 820w, /hero-poster-md.avif 1100w, /hero-poster.avif 1600w"
+        sizes="100vw"
+        type="image/avif"
+      />
+      <source
+        srcset="/hero-poster-sm.webp 820w, /hero-poster-md.webp 1100w, /hero-poster.webp 1600w"
+        sizes="100vw"
+        type="image/webp"
+      />
+      <img
+        src="/hero-poster-sm.jpg"
+        srcset="/hero-poster-sm.jpg 820w, /hero-poster-md.jpg 1100w, /hero-poster.jpg 1600w"
+        sizes="100vw"
+        width="1600"
+        height="900"
+        alt="A synthetic LiDAR sweep seen from just behind and above an ego vehicle: concentric rings of returns across the ground plane, with nine colour-coded wireframe 3D boxes marking cars, pedestrians and cyclists."
+        fetchpriority="high"
+      />
+    </picture>
+    <canvas data-hero-canvas aria-hidden="true"></canvas>
+  </div>
+
+  <div class="hero__veil" aria-hidden="true"></div>
+
+  <div class="wrap hero__inner">
+    <div class="hero__copy">
+      <p class="kicker">{site.location} · {site.availability}</p>
+      <h1 class="hero__name display">Pavan Yadava Annappa</h1>
+      <p class="hero__role">ML Engineer — 3D Perception, Sensor Fusion &amp; Edge Deployment</p>
+      <p class="hero__lede">
+        From BEV fusion to TensorRT on the metal. Every number measured on stated hardware.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="/work">View work</a>
+        <a class="btn" href={site.cv} download>Download CV</a>
+        <a class="btn" href={`mailto:${site.email}`}>{site.email}</a>
+      </div>
+    </div>
+
+    <ol class="hero__pipeline" aria-label="Pipeline the work covers">
+      {
+        PIPELINE_STAGES.map((stage, i) => (
+          <li style={`--i:${i}`}>
+            <span class="mono">{String(i + 1).padStart(2, '0')}</span>
+            {stage}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  <p class="hero__caption">
+    Synthetic sweep, generated in the browser from
+    <code>src/lib/bev-scene.ts</code>. No licensed sensor data is shipped to this page.
+  </p>
+</section>
+
+<style>
+  /* The hero is a viewport, not a page section: it stays dark in both themes, the way
+     an rviz or oscilloscope panel does. Its own colours are declared here rather than
+     taken from the theme tokens. */
+  .hero {
+    --hero-bg: #07080a;
+    --hero-fg: #e8eaed;
+    --hero-muted: #9aa1ac;
+    --hero-accent: #5ce1e6;
+    color: var(--hero-fg);
+    background: var(--hero-bg);
+    position: relative;
+    isolation: isolate;
+    min-height: min(86vh, 48rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: clamp(3rem, 8vh, 5rem) 2rem;
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .hero__scene {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+  .hero__scene img,
+  .hero__scene canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero__scene canvas {
+    opacity: 0;
+    transition: opacity 600ms var(--ease);
+  }
+  .hero__scene[data-scene-ready] canvas {
+    opacity: 1;
+  }
+  /* Once the live scene is up, the poster underneath is redundant weight on the compositor. */
+  .hero__scene[data-scene-ready] img {
+    opacity: 0;
+  }
+  .hero__veil {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(
+        to right,
+        var(--hero-bg) 0%,
+        color-mix(in srgb, var(--hero-bg) 70%, transparent) 42%,
+        transparent 72%
+      ),
+      linear-gradient(to top, var(--hero-bg) 1%, transparent 46%);
+  }
+  .hero__inner {
+    display: grid;
+    gap: 2.5rem;
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 900px) {
+    .hero__inner {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    }
+  }
+  .hero__copy {
+    max-width: 52ch;
+  }
+  .hero :global(.kicker) {
+    color: var(--hero-accent);
+  }
+  .hero :global(.btn) {
+    background: color-mix(in srgb, var(--hero-bg) 55%, transparent);
+    border-color: color-mix(in srgb, var(--hero-fg) 28%, transparent);
+    color: var(--hero-fg);
+    backdrop-filter: blur(6px);
+  }
+  .hero :global(.btn:hover) {
+    border-color: var(--hero-accent);
+    color: var(--hero-accent);
+  }
+  .hero :global(.btn--primary),
+  .hero :global(.btn--primary:hover) {
+    background: var(--hero-accent);
+    border-color: var(--hero-accent);
+    color: #07080a;
+  }
+  .hero__name {
+    font-size: var(--t-display);
+    line-height: 0.95;
+    margin-top: 0.75rem;
+  }
+  .hero__role {
+    color: var(--hero-fg);
+    margin-top: 0.9rem;
+    font-size: clamp(1.1rem, 0.95rem + 0.8vw, 1.5rem);
+    font-weight: 500;
+  }
+  .hero__lede {
+    margin-top: 0.75rem;
+    color: var(--hero-muted);
+    max-width: 38ch;
+  }
+  .hero__actions {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .hero__pipeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    font-size: var(--t-xs);
+    color: var(--hero-muted);
+    font-family: var(--font-mono-stack);
+  }
+  @media (min-width: 900px) {
+    .hero__pipeline {
+      flex-direction: column;
+      gap: 0.55rem;
+      border-left: 1px solid color-mix(in srgb, var(--hero-fg) 22%, transparent);
+      padding-left: 1.1rem;
+    }
+  }
+  .hero__pipeline li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+  .hero__pipeline span {
+    color: var(--hero-accent);
+    opacity: 0.8;
+  }
+  .hero__caption {
+    color: color-mix(in srgb, var(--hero-fg) 42%, transparent);
+    margin-top: 2.5rem;
+    padding-inline: var(--gutter);
+    max-width: var(--maxw);
+    margin-inline: auto;
+    width: 100%;
+    font-size: var(--t-xs);
+  }
+  .hero__caption code {
+    font-family: var(--font-mono-stack);
+  }
+</style>

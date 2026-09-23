@@ -1,0 +1,122 @@
+---
+import { splitMetric, provenance } from '~/lib/format';
+
+export interface TickerMetric {
+  value: string;
+  label: string;
+  project: string;
+  href: string;
+  hardware?: string;
+  dataset?: string;
+  n?: string;
+  source?: string;
+  illustrative?: boolean;
+}
+
+interface Props {
+  metrics: TickerMetric[];
+}
+const { metrics } = Astro.props;
+---
+
+<ul class="ticker" data-ticker>
+  {
+    metrics.map((m) => {
+      const { head, tail } = splitMetric(m.value);
+      const prov = provenance(m);
+      return (
+        <li class="ticker__item">
+          <a class="ticker__link" href={m.href}>
+            <span class="ticker__value mono">
+              {/* The verbatim string is always in the DOM. Only the visual layer counts up. */}
+              <span class="sr-only">{m.value}</span>
+              <span aria-hidden="true">
+                <span class="ticker__head" data-count={head}>
+                  {head}
+                </span>
+                <span class="ticker__tail">{tail}</span>
+              </span>
+            </span>
+            <span class="ticker__label">{m.label}</span>
+            <span class="ticker__project">{m.project}</span>
+          </a>
+          {prov.length > 0 && (
+            <div class="ticker__tip" role="note">
+              <ul>
+                {prov.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+              {m.source && (
+                <a href={m.source} rel="noopener" target="_blank">
+                  Source →
+                </a>
+              )}
+            </div>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>
+
+<style>
+  @import '../components/metric-ticker.css';
+</style>
+
+<script>
+  /**
+   * Count each standalone quantity up from zero when the strip scrolls into view.
+   * A digit glued to a letter or an `@` is part of a name, not a quantity - `F1`,
+   * `p95`, `mAP50` and `hit@5` have to survive untouched.
+   */
+  function interpolate(value: string, t: number): string {
+    if (t >= 1) return value;
+    return value.replace(/([^A-Za-z@]|^)(\d+(?:[.,]\d+)?)/g, (_m, lead: string, num: string) => {
+      const decimals = (num.split(/[.,]/)[1] ?? '').length;
+      const out = (parseFloat(num.replace(',', '.')) * t).toFixed(decimals);
+      return lead + (num.includes(',') ? out.replace('.', ',') : out);
+    });
+  }
+
+  function wireTicker() {
+    document.querySelectorAll<HTMLElement>('[data-ticker]').forEach((strip) => {
+      if (strip.dataset.wired) return;
+      strip.dataset.wired = '1';
+
+      const cells = [...strip.querySelectorAll<HTMLElement>('[data-count]')];
+      const targets = cells.map((c) => c.dataset.count ?? '');
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const run = () => {
+        if (reduced) return;
+        const start = performance.now();
+        const duration = 900;
+        const step = (now: number) => {
+          const p = Math.min(1, (now - start) / duration);
+          // easeOutCubic - settles rather than bounces.
+          const t = 1 - Math.pow(1 - p, 3);
+          cells.forEach((c, i) => {
+            c.textContent = interpolate(targets[i], t);
+          });
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      };
+
+      if (!('IntersectionObserver' in window)) return;
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          io.disconnect();
+          run();
+        },
+        { threshold: 0.35 },
+      );
+      io.observe(strip);
+    });
+  }
+
+  wireTicker();
+  document.addEventListener('astro:page-load', wireTicker);
+</script>

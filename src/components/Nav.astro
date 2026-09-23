@@ -11,7 +11,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
   <div class="wrap nav__inner">
     <a class="nav__brand" href="/">
       <span class="nav__mark" aria-hidden="true"></span>
-      <span>{site.name}</span>
+      <span class="nav__brand-name">{site.name}</span>
+      <span class="sr-only">— home</span>
     </a>
 
     <nav aria-label="Primary">
@@ -119,7 +120,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
     color: var(--fg);
   }
   @media (max-width: 560px) {
-    .nav__brand span:last-child {
+    .nav__brand-name {
       display: none;
     }
     .nav__cmd {

@@ -2,7 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import Nav from '~/components/Nav.astro';
 import Footer from '~/components/Footer.astro';
-import CommandPalette from '~/components/CommandPalette.tsx';
+import PaletteLoader from '~/components/PaletteLoader.astro';
 import { resolveSeo, personJsonLd, type SeoInput } from '~/lib/seo';
 import { site } from '~/lib/site';
 import '~/styles/global.css';
@@ -16,7 +16,6 @@ const { jsonLd = [], ...seoInput } = Astro.props;
 const seo = resolveSeo({ ...seoInput, path: Astro.url.pathname });
 const graphs = [personJsonLd(), ...jsonLd];
 
-const palette = await import('~/lib/palette').then((m) => m.buildPaletteItems());
 ---
 
 <!doctype html>
@@ -46,22 +45,18 @@ const palette = await import('~/lib/palette').then((m) => m.buildPaletteItems())
     <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    {/* Self-hosted, committed in public/fonts (see scripts/fetch-fonts.ts). Only the two
-        above-the-fold families are preloaded; mono arrives with the stylesheet. */}
+    {/* Self-hosted, committed in public/fonts (see scripts/fetch-fonts.ts). Only the UI
+        family is preloaded - it renders almost every glyph on the page. Display and mono
+        arrive with the stylesheet and have metric-matched fallbacks, so a late swap
+        costs no layout shift. */}
     <link
       rel="preload"
-      href="/fonts/inter-tight-400-latin.woff2"
+      href="/fonts/inter-tight-400-normal-latin.woff2"
       as="font"
       type="font/woff2"
       crossorigin
     />
-    <link
-      rel="preload"
-      href="/fonts/fraunces-400-latin.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+
 
     {
       graphs.map((g) => (
@@ -97,6 +92,6 @@ const palette = await import('~/lib/palette').then((m) => m.buildPaletteItems())
       <slot />
     </main>
     <Footer />
-    <CommandPalette client:idle items={palette} />
+    <PaletteLoader />
   </body>
 </html>

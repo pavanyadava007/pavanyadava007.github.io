@@ -1,0 +1,42 @@
+---
+interface Props {
+  id: string;
+  kicker: string;
+  title: string;
+  lede?: string;
+  /** Show the 40px BEV grid on this divider. */
+  grid?: boolean;
+  class?: string;
+}
+const { id, kicker, title, lede, grid = false, class: className } = Astro.props;
+---
+
+<section id={id} class:list={['section', className, grid && 'bev-grid']}>
+  <div class="wrap">
+    <header class="section__head">
+      <p class="kicker">{kicker}</p>
+      <h2 class="section__title">{title}</h2>
+      {lede && <p class="lede section__lede">{lede}</p>}
+    </header>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    padding-block: clamp(3.5rem, 8vh, 6rem);
+    border-top: 1px solid var(--line);
+    scroll-margin-top: 5rem;
+  }
+  .section__head {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 2.25rem;
+  }
+  .section__title {
+    font-size: var(--t-h2);
+  }
+  .section__lede {
+    margin-top: 0.25rem;
+  }
+</style>

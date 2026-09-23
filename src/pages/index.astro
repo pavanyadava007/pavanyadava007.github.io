@@ -1,4 +1,257 @@
 ---
+import { getCollection } from 'astro:content';
 import Base from '~/layouts/Base.astro';
+import HeroPoster from '~/components/hero/HeroPoster.astro';
+import MetricTicker, { type TickerMetric } from '~/components/MetricTicker.astro';
+import ProjectCard from '~/components/ProjectCard.astro';
+import Section from '~/components/Section.astro';
+import { site } from '~/lib/site';
+import { dateRange } from '~/lib/format';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const featured = projects.filter((p) => p.data.featured);
+const experience = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
+const skills = (await getCollection('skills')).sort((a, b) => a.data.order - b.data.order);
+
+/**
+ * The proof strip pulls the headline number straight out of the project's own
+ * metric list by index, so nothing here is retyped and verify:metrics covers it.
+ */
+const HEADLINES: [slug: string, index: number][] = [
+  ['offroad-bevfusion', 0],
+  ['langgrasp', 0],
+  ['aeroedge', 1],
+  ['sigint-fusion', 0],
+  ['makerspace-reuse-scanner', 0],
+  ['hw-validation-agent', 0],
+];
+
+const tickerMetrics: TickerMetric[] = HEADLINES.map(([slug, i]) => {
+  const project = projects.find((p) => p.id === slug);
+  if (!project) throw new Error(`proof strip references unknown project "${slug}"`);
+  const m = project.data.metrics[i];
+  if (!m) throw new Error(`proof strip references missing metric ${slug}[${i}]`);
+  return { ...m, project: project.data.title, href: `/work/${project.id}` };
+});
 ---
-<Base><div class="wrap"><h1>scaffold</h1></div></Base>
+
+<Base>
+  <HeroPoster />
+
+  <section class="proof" aria-labelledby="proof-heading">
+    <div class="wrap">
+      <h2 id="proof-heading" class="proof__heading">
+        <span class="kicker">Measured, not estimated</span>
+      </h2>
+    </div>
+    <MetricTicker metrics={tickerMetrics} />
+    <div class="wrap">
+      <p class="proof__note">
+        Every figure above was measured on the hardware named in its tooltip and links to the
+        repository that produced it. Where an experiment failed or could not be measured, the case
+        study says so.
+      </p>
+    </div>
+  </section>
+
+  <Section
+    id="work"
+    kicker="Selected work"
+    title="Five systems, built end to end"
+    lede="Each one goes from the model to something that runs: a TensorRT engine behind a ROS 2 node, a signed bundle on a 20-device fleet, a local RAG stack that declines to answer."
+  >
+    <div class="cards">
+      {featured.map((project) => <ProjectCard project={project} />)}
+    </div>
+    <p class="section__more">
+      <a class="btn" href="/work">All work, filterable →</a>
+      <a class="btn" href="/lab">Lab &amp; negative results →</a>
+    </p>
+  </Section>
+
+  <Section
+    id="experience"
+    kicker="Experience"
+    title="Where I've worked"
+    grid
+  >
+    <ol class="timeline">
+      {
+        experience.map((entry) => (
+          <li class="timeline__item" data-kind={entry.data.kind}>
+            <p class="timeline__when mono">{dateRange(entry.data.start, entry.data.end)}</p>
+            <div>
+              <h3 class="timeline__role">{entry.data.role}</h3>
+              <p class="timeline__org">
+                {entry.data.org}
+                {entry.data.location && <span> · {entry.data.location}</span>}
+              </p>
+              {entry.data.bullets.length > 0 && (
+                <ul class="timeline__bullets">
+                  {entry.data.bullets.map((b) => (
+                    <li>{b}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Section id="skills" kicker="Skills" title="What I work with">
+    <div class="skills">
+      {
+        skills.map((group) => (
+          <div class="skills__group">
+            <h3>{group.data.group}</h3>
+            <ul>
+              {group.data.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section
+    id="contact"
+    kicker="Contact"
+    title="Available from 20 October 2026"
+    lede={`Based in ${site.location}. Open to perception, sensor-fusion and edge-deployment roles in Germany.`}
+    grid
+  >
+    <div class="contact">
+      <a class="btn btn--primary" href={`mailto:${site.email}`}>{site.email}</a>
+      <a class="btn" href={site.cv} download>Download CV (PDF)</a>
+      <a class="btn" href={site.social.linkedin} rel="noopener">LinkedIn</a>
+      <a class="btn" href={site.social.github} rel="noopener">GitHub</a>
+      <a class="btn" href={site.social.huggingface} rel="noopener">Hugging Face</a>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .proof {
+    padding-block: clamp(2.5rem, 6vh, 4rem) 0;
+  }
+  .proof__heading {
+    margin-bottom: 1.1rem;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .proof__note {
+    margin-top: 1.1rem;
+    color: var(--fg-dim);
+    font-size: var(--t-sm);
+    max-width: 62ch;
+  }
+  .cards {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  }
+  .section__more {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px solid var(--line-strong);
+  }
+  .timeline__item {
+    position: relative;
+    display: grid;
+    gap: 0.35rem 2rem;
+    padding: 0 0 2rem 1.75rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 760px) {
+    .timeline__item {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+  }
+  .timeline__item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0.55rem;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--accent);
+  }
+  .timeline__item[data-kind='education']::before {
+    border-color: var(--fg-dim);
+  }
+  .timeline__when {
+    color: var(--fg-dim);
+    font-size: var(--t-xs);
+    padding-top: 0.2rem;
+  }
+  .timeline__role {
+    font-size: 1.05rem;
+  }
+  .timeline__org {
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    margin-top: 0.15rem;
+  }
+  .timeline__bullets {
+    margin-top: 0.6rem;
+    padding-left: 1rem;
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .skills {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  }
+  .skills__group {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.25rem;
+  }
+  .skills__group h3 {
+    font-family: var(--font-mono-stack);
+    font-size: var(--t-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .skills__group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.85rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .skills__group li {
+    font-size: var(--t-xs);
+    color: var(--fg-muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.18rem 0.6rem;
+  }
+
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+</style>

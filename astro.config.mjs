@@ -12,9 +12,8 @@ export default defineConfig({
   trailingSlash: 'ignore',
   compressHTML: true,
   integrations: [react(), mdx(), sitemap(), pagefind()],
-  vite: {
-    plugins: [tailwindcss()],
-    build: { cssCodeSplit: false },
-  },
+  vite: { plugins: [tailwindcss()] },
+  /** Inline the page's CSS so first paint costs no extra round trip on a cold visit. */
+  build: { inlineStylesheets: 'auto' },
   image: { responsiveStyles: true },
 });

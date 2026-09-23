@@ -5,8 +5,14 @@ import './command-palette.css';
 
 const GROUP_ORDER = ['Projects', 'Pages', 'Links', 'Actions'] as const;
 
-export default function CommandPalette({ items }: { items: PaletteItem[] }) {
-  const [open, setOpen] = useState(false);
+export default function CommandPalette({
+  items,
+  startOpen = false,
+}: {
+  items: PaletteItem[];
+  startOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(startOpen);
   const [toast, setToast] = useState<string | null>(null);
   const restoreFocus = useRef<HTMLElement | null>(null);
 
@@ -34,14 +40,10 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
     };
     const onOpenRequest = () => show(true);
     document.addEventListener('keydown', onKey);
-    document
-      .querySelectorAll('[data-open-palette]')
-      .forEach((el) => el.addEventListener('click', onOpenRequest));
+    document.addEventListener('palette:open', onOpenRequest);
     return () => {
       document.removeEventListener('keydown', onKey);
-      document
-        .querySelectorAll('[data-open-palette]')
-        .forEach((el) => el.removeEventListener('click', onOpenRequest));
+      document.removeEventListener('palette:open', onOpenRequest);
     };
   }, [open, show]);
 

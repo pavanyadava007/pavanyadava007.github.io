@@ -9,6 +9,12 @@ export function splitMetric(value: string): { head: string; tail: string } {
   return { head: m[1].trim(), tail: m[2] };
 }
 
+/** Quick check used by tests: the two halves must always rebuild the verbatim string. */
+export function metricRoundTrips(value: string): boolean {
+  const { head, tail } = splitMetric(value);
+  return (head + tail).replace(/\s+/g, ' ') === value.replace(/\s+/g, ' ');
+}
+
 /** Provenance line under a metric: only the fields that were actually supplied. */
 export function provenance(m: {
   hardware?: string;

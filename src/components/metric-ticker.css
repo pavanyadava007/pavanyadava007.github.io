@@ -1,0 +1,96 @@
+.ticker {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border-block: 1px solid var(--line);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+.ticker__item {
+  position: relative;
+  background: var(--bg);
+}
+.ticker__link {
+  display: block;
+  padding: 1.5rem 1.25rem 1.35rem;
+  height: 100%;
+  text-decoration: none;
+  transition: background 200ms var(--ease);
+}
+.ticker__link:hover,
+.ticker__link:focus-visible {
+  background: var(--bg-elev);
+}
+.ticker__value {
+  display: block;
+  font-size: var(--t-metric);
+  font-weight: 500;
+  line-height: 1.05;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+}
+.ticker__head {
+  color: var(--accent);
+}
+.ticker__tail {
+  color: var(--fg);
+  font-size: 0.72em;
+}
+.ticker__label {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: var(--t-sm);
+  color: var(--fg-muted);
+  max-width: 28ch;
+}
+.ticker__project {
+  display: block;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono-stack);
+  font-size: var(--t-xs);
+  color: var(--fg-dim);
+}
+.ticker__tip {
+  position: absolute;
+  z-index: 20;
+  inset-inline: 0.5rem;
+  bottom: calc(100% - 0.5rem);
+  background: var(--bg-elev);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 0.75rem 0.85rem;
+  font-size: var(--t-xs);
+  color: var(--fg-muted);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 200ms var(--ease),
+    transform 200ms var(--ease),
+    visibility 200ms;
+}
+.ticker__item:hover .ticker__tip,
+.ticker__item:focus-within .ticker__tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.ticker__tip ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.ticker__tip li::before {
+  content: '· ';
+  color: var(--accent);
+}
+.ticker__tip a {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--accent);
+}

@@ -27,6 +27,7 @@
     "@astrojs/react": "^7.0.0",
     "@astrojs/sitemap": "^3.7.4",
     "@axe-core/playwright": "^4",
+    "@capsizecss/metrics": "^3.7.0",
     "@lhci/cli": "^0.15",
     "@playwright/test": "^1",
     "@tailwindcss/vite": "^4.3.3",

@@ -1,0 +1,241 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import { STATUS_LABELS } from '~/lib/site';
+import { image } from '~/lib/media';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  /** `list` is the alternate density used by the /work toggle. */
+  layout?: 'grid' | 'list';
+  /** Card images morph into the case-study header via the View Transitions API. */
+  transition?: boolean;
+}
+
+const { project, layout = 'grid', transition = true } = Astro.props;
+const { data, id } = project;
+const chips = data.metrics.slice(0, 3);
+const poster = data.poster ? image(data.poster) : null;
+---
+
+<article class:list={['card', `card--${layout}`]} data-status={data.status}>
+  {
+    poster && (
+      <div class="card__media">
+        <Image
+          src={poster}
+          alt=""
+          widths={[280, 400, 640, 960]}
+          sizes="(min-width: 1100px) 380px, (min-width: 720px) 45vw, 92vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          decoding="async"
+          transition:name={transition ? `poster-${id}` : undefined}
+        />
+      </div>
+    )
+  }
+
+  <div class="card__body">
+    <p class="card__kicker kicker">{data.kicker}</p>
+    <h3 class="card__title">
+      <a href={`/work/${id}`}>
+        {data.title}
+      </a>
+    </h3>
+    <p class="card__claim">{data.claim}</p>
+
+    {
+      chips.length > 0 && (
+        <ul class="card__metrics">
+          {chips.map((m) => (
+            <li>
+              <span class="mono">{m.value}</span>
+              <span>{m.label}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="card__foot">
+      <span class:list={['card__status', `card__status--${data.status}`]}>
+        {STATUS_LABELS[data.status]}
+      </span>
+      <ul class="card__stack">
+        {data.stack.slice(0, layout === 'list' ? 6 : 4).map((s) => <li>{s}</li>)}
+      </ul>
+    </div>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition:
+      border-color 250ms var(--ease),
+      transform 250ms var(--ease);
+  }
+  /* 1px accent line sweeping across the top edge on hover and on keyboard focus. */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    height: 1px;
+    width: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 320ms var(--ease);
+    z-index: 2;
+  }
+  .card:hover,
+  .card:focus-within {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card:hover::before,
+  .card:focus-within::before {
+    transform: scaleX(1);
+  }
+  .card--list {
+    flex-direction: row;
+  }
+  @media (max-width: 720px) {
+    .card--list {
+      flex-direction: column;
+    }
+  }
+
+  .card__media {
+    display: block;
+    background: var(--bg-sunk);
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .card--list .card__media {
+    width: 34%;
+    border-bottom: 0;
+    border-inline-end: 1px solid var(--line);
+  }
+  @media (max-width: 720px) {
+    .card--list .card__media {
+      width: 100%;
+      border-inline-end: 0;
+      border-bottom: 1px solid var(--line);
+    }
+  }
+  .card__media img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    opacity: 0.86;
+    transition: opacity 250ms var(--ease);
+  }
+  .card:hover .card__media img {
+    opacity: 1;
+  }
+
+  .card__body {
+    padding: 1.35rem 1.35rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex: 1;
+  }
+  .card__title {
+    font-size: var(--t-h3);
+  }
+  .card__title a {
+    text-decoration: none;
+  }
+  /* Full-card hit area: the pseudo-element resolves against `.card`, which is the
+     nearest positioned ancestor, so the whole card is clickable with one link. */
+  .card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .card__claim {
+    color: var(--fg-muted);
+    font-size: var(--t-sm);
+    flex: 1;
+  }
+  .card__metrics {
+    list-style: none;
+    padding: 0;
+    margin: 0.2rem 0 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .card__metrics li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+  }
+  .card__metrics .mono {
+    color: var(--accent);
+    font-size: var(--t-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .card__metrics li > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .card__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+  }
+  .card__status {
+    font-family: var(--font-mono-stack);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid;
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    color: var(--fg-dim);
+    border-color: var(--line-strong);
+  }
+  .card__status--live {
+    color: var(--ok);
+    border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+  }
+  .card__status--new {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .card__status--private {
+    color: var(--accent-2);
+    border-color: color-mix(in srgb, var(--accent-2) 45%, transparent);
+  }
+  .card__stack {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.6rem;
+    padding: 0;
+    margin: 0;
+    font-size: var(--t-xs);
+    color: var(--fg-dim);
+    font-family: var(--font-mono-stack);
+    margin-inline-start: auto;
+  }
+</style>

@@ -7,7 +7,7 @@
   --line-strong: #2e343d;
   --fg: #e8eaed;
   --fg-muted: #9aa1ac;
-  --fg-dim: #5f6670;
+  --fg-dim: #7d8590; /* 5.3:1 on --bg */
   --accent: #5ce1e6; /* LiDAR cyan - primary */
   --accent-2: #ffb547; /* radar amber - warnings and limits */
   --ok: #4ade80;
@@ -24,7 +24,7 @@
   --gutter: clamp(16px, 4vw, 24px);
 
   --font-ui-stack: 'Inter Tight', 'Inter Tight fallback', ui-sans-serif, system-ui, sans-serif;
-  --font-display-stack: 'Fraunces', 'Fraunces fallback', Georgia, serif;
+  --font-display-stack: 'Instrument Serif', 'Instrument Serif fallback', Georgia, serif;
   --font-mono-stack: 'JetBrains Mono', 'JetBrains Mono fallback', ui-monospace, SFMono-Regular, monospace;
 
   color-scheme: dark;
@@ -38,21 +38,21 @@
   --line-strong: #cfcfca;
   --fg: #0e1013;
   --fg-muted: #4b5260;
-  --fg-dim: #8a909a;
-  --accent: #0e8a91;
-  --accent-2: #b86e00;
+  --fg-dim: #656b75; /* 5.2:1 on --bg */
+  --accent: #0c7278; /* 5.5:1 on --bg */
+  --accent-2: #8f5500; /* 5.8:1 on --bg */
   --ok: #157f44;
   --fail: #b3261e;
-  --grid: rgba(14, 138, 145, 0.07);
-  --accent-soft: rgba(14, 138, 145, 0.08);
-  --accent-2-soft: rgba(184, 110, 0, 0.09);
+  --grid: rgba(12, 114, 120, 0.08);
+  --accent-soft: rgba(12, 114, 120, 0.09);
+  --accent-2-soft: rgba(143, 85, 0, 0.09);
   --shadow: 0 18px 48px rgba(16, 20, 28, 0.1);
   color-scheme: light;
 }
 
 /* Fluid type scale. */
 :root {
-  --t-display: clamp(2.75rem, 1.6rem + 5.2vw, 6rem);
+  --t-display: clamp(2.6rem, 1.8rem + 3.4vw, 4.75rem);
   --t-h1: clamp(2.1rem, 1.4rem + 3vw, 3.4rem);
   --t-h2: clamp(1.75rem, 1.35rem + 1.7vw, 2.75rem);
   --t-h3: clamp(1.15rem, 1.05rem + 0.5vw, 1.4rem);
